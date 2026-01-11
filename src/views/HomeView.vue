@@ -48,10 +48,12 @@ function goToHistory() {
         </div>
         <nav class="nav">
           <button class="btn btn-ghost" @click="goToHistory">
-            📚 历史记录
+            <span class="nav-icon">📚</span>
+            <span class="nav-text">历史记录</span>
           </button>
           <button class="btn btn-ghost" @click="goToSettings">
-            ⚙️ 设置
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">设置</span>
           </button>
         </nav>
       </div>

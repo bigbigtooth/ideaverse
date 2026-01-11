@@ -76,7 +76,7 @@
 .hero {
   text-align: center;
   margin-bottom: var(--space-3xl);
-  padding-top: var(--space-3xl);
+  padding-top: 140px;
 }
 
 .hero-badge { display: none; }
@@ -368,16 +368,33 @@
 
 @media (max-width: 640px) {
   .header-content {
-    padding: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
   }
   
   .logo-icon {
-    width: 100px;
+    width: 32px;
   }
   
   .logo-text {
     font-size: var(--text-base);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
+  }
+  
+  .nav-text {
+    display: none;
+  }
+
+  .nav .btn {
+    padding: 8px;
+  }
+
+  .hero {
+    padding-top: 100px;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+    padding: 0 var(--space-md);
   }
   
   .input-section {
@@ -410,7 +427,7 @@
 
 @media (max-width: 480px) {
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .features-title {
