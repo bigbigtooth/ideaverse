@@ -7,7 +7,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  position: relative;
 }
 
 /* Header - 极简，右上角小按钮 */
@@ -69,7 +69,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 80vh;
+  flex: 1;
+  width: 100%;
 }
 
 /* Hero */
@@ -310,13 +311,12 @@
 
 /* Footer */
 .footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  width: 100%;
   padding: var(--space-lg);
   text-align: center;
   border: none;
+  margin-top: auto;
 }
 
 .footer p {
