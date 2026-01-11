@@ -504,8 +504,10 @@ function goBack() {
   .bottom-actions { flex-direction: column; gap: var(--space-md); }
   .bottom-actions .btn { width: 100%; justify-content: center; }
   
-  .mindmap-header { flex-direction: column; align-items: flex-start; gap: var(--space-md); }
-  .mindmap-actions { width: 100%; justify-content: flex-end; }
+  .mindmap-header { flex-direction: column; align-items: stretch; gap: var(--space-md); }
+  .mindmap-title { justify-content: center; }
+  .mindmap-actions { width: 100%; display: flex; justify-content: space-between; gap: 8px; }
+  .mindmap-actions .btn { flex: 1; padding: 8px 0; justify-content: center; font-size: 13px; white-space: nowrap; min-width: 0; }
   
   .card-actions { flex-direction: column; }
   .action-btn { justify-content: center; }
