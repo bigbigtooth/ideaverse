@@ -35,7 +35,7 @@ function startThinking() {
     return
   }
   
-  const session = store.createNewSession(problemInput.value.trim())
+  const session = store.createSession(problemInput.value.trim())
   router.push(`/think/${session.id}`)
 }
 
