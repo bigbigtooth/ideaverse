@@ -50,6 +50,7 @@ export function getSession(id) {
  * - deepAnalysisReport: 步骤二生成的深度分析汇总报告
  * - solutions: 步骤三生成的解决方案列表
  * - mindMap: 最终生成的思维导图
+ * - mindMapHash: 思维导图生成时的上下文哈希，用于缓存校验
  * 
  * @param {string} problem - 用户的初始问题
  * @returns {Object} - 新创建的会话对象
@@ -75,7 +76,8 @@ export function createSession(problem) {
         // 步骤三数据
         solutions: [],
         recommendation: null,
-        mindMap: null
+        mindMap: null,
+        mindMapHash: null
     }
 
     const sessions = getSessions()

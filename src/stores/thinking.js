@@ -486,6 +486,25 @@ export const useThinkingStore = defineStore('thinking', () => {
     async function generateMindMap() {
         if (!currentSession.value) return
 
+        // 1. 构建当前上下文对象，包含所有影响思维导图生成的输入数据
+        const context = {
+            problem: currentSession.value.problem,
+            understandingReport: currentSession.value.understandingReport,
+            thinkingModel: currentSession.value.thinkingModel,
+            analysisCards: currentSession.value.analysisCards,
+            solutions: currentSession.value.solutions,
+            recommendation: currentSession.value.recommendation
+        }
+
+        // 2. 计算当前上下文的哈希值
+        const currentHash = generateHash(JSON.stringify(context))
+
+        // 3. 检查缓存：如果思维导图已存在且哈希值匹配，直接返回缓存
+        if (currentSession.value.mindMap && currentSession.value.mindMapHash === currentHash) {
+            console.log('Using cached Mind Map')
+            return currentSession.value.mindMap
+        }
+
         setAiStatus('requesting', '正在生成思维导图...')
         try {
             const mindMap = await ai.generateMindMap(
@@ -503,6 +522,7 @@ export const useThinkingStore = defineStore('thinking', () => {
             )
             updateCurrentSession({
                 mindMap,
+                mindMapHash: currentHash, // 保存哈希值
                 status: 'completed'
             })
             return mindMap
