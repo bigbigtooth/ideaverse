@@ -4,6 +4,17 @@ import { useRouter } from 'vue-router'
 import { useThinkingStore } from '../stores/thinking'
 import * as storage from '../services/storage'
 import '../styles/HistoryView.css'
+import { 
+  History, 
+  FileText, 
+  CheckCircle, 
+  Loader, 
+  Download, 
+  Save, 
+  Trash2,
+  ArrowLeft,
+  Play
+} from 'lucide-vue-next'
 
 const router = useRouter()
 const store = useThinkingStore()
@@ -91,9 +102,11 @@ function goHome() {
     <header class="header">
       <div class="container header-content">
         <button class="btn btn-ghost" @click="goHome">
-          ← 返回首页
+          <ArrowLeft :size="16" /> 返回首页
         </button>
-        <h1 class="page-title">📚 历史记录</h1>
+        <h1 class="page-title">
+          <History :size="24" /> 历史记录
+        </h1>
         <div style="width: 100px;"></div>
       </div>
     </header>
@@ -103,11 +116,11 @@ function goHome() {
       <div class="container">
         <!-- 空状态 -->
         <div v-if="sessions.length === 0" class="empty-state">
-          <div class="empty-icon">📝</div>
+          <FileText class="empty-icon" :size="48" />
           <h2>暂无记录</h2>
           <p>开始你的第一次深度思考吧</p>
           <button class="btn btn-primary" @click="goHome">
-            开始思考
+            <Play :size="16" /> 开始思考
           </button>
         </div>
         
@@ -120,7 +133,8 @@ function goHome() {
           >
             <div class="session-header">
               <div class="session-status" :class="getStatusClass(session.status)">
-                {{ session.status === 'completed' ? '✅ 已完成' : '🔄 进行中' }}
+                <component :is="session.status === 'completed' ? CheckCircle : Loader" :size="14" />
+                {{ session.status === 'completed' ? '已完成' : '进行中' }}
               </div>
               <div class="session-date">{{ formatDate(session.updatedAt) }}</div>
             </div>
@@ -142,6 +156,7 @@ function goHome() {
                 class="btn btn-primary"
                 @click="continueSession(session)"
               >
+                <Play :size="14" />
                 {{ session.status === 'completed' ? '查看详情' : '继续思考' }}
               </button>
               <button 
@@ -149,19 +164,19 @@ function goHome() {
                 class="btn btn-secondary"
                 @click="exportMindMap(session)"
               >
-                📥 导出思维导图
+                <Download :size="14" /> 导出思维导图
               </button>
               <button 
                 class="btn btn-ghost"
                 @click="exportSession(session)"
               >
-                💾 导出数据
+                <Save :size="14" /> 导出数据
               </button>
               <button 
                 class="btn btn-ghost delete-btn"
                 @click="deleteSessionConfirm(session)"
               >
-                🗑️ 删除
+                <Trash2 :size="14" /> 删除
               </button>
             </div>
           </div>

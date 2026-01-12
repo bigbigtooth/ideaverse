@@ -3,6 +3,95 @@ import { ref, computed, onMounted } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'
 import { THINKING_MODELS } from '../../services/ai'
 import MarkdownViewer from '../common/MarkdownViewer.vue'
+import {
+  Search,
+  Brain,
+  Sparkles,
+  Lightbulb,
+  RefreshCw,
+  LayoutGrid,
+  Edit3,
+  Trash2,
+  Pin,
+  Link,
+  Zap,
+  Eye,
+  ArrowLeft,
+  ArrowRight,
+  FileText,
+  Save,
+  Target,
+  Triangle,
+  GitBranch,
+  Grid,
+  Scale,
+  Network,
+  Umbrella,
+  ListChecks,
+  LayoutDashboard,
+  Globe,
+  Users,
+  Crosshair,
+  Shield,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  PieChart,
+  RotateCw,
+  Layers,
+  Signal,
+  Microscope,
+  BarChart,
+  Move,
+  Swords,
+  Drama,
+  Calculator
+} from 'lucide-vue-next'
+
+const iconMap = {
+  Search,
+  Brain,
+  Sparkles,
+  Lightbulb,
+  RefreshCw,
+  LayoutGrid,
+  Edit3,
+  Trash2,
+  Pin,
+  Link,
+  Zap,
+  Eye,
+  ArrowLeft,
+  ArrowRight,
+  FileText,
+  Save,
+  Target,
+  Triangle,
+  GitBranch,
+  Grid,
+  Scale,
+  Network,
+  Umbrella,
+  ListChecks,
+  LayoutDashboard,
+  Globe,
+  Users,
+  Crosshair,
+  Shield,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  PieChart,
+  RotateCw,
+  Layers,
+  Signal,
+  Microscope,
+  BarChart,
+  Move,
+  Swords,
+  Drama,
+  Calculator
+}
 
 const store = useThinkingStore()
 
@@ -99,14 +188,17 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
 <template>
   <div class="step2">
     <div class="step-header">
-      <h2 class="step-title"><span>🔍</span> 步骤二：深度分析</h2>
+      <h2 class="step-title">
+        <Search class="title-icon" :size="32" stroke-width="2.5" /> 
+        步骤二：深度分析
+      </h2>
       <p class="step-desc">运用科学的思维模型，多维度深入剖析问题本质</p>
     </div>
     
     <!-- 思维模型选择器 -->
     <div v-if="showModelSelector" class="model-selector">
       <div class="selector-header">
-        <div class="selector-icon">🧠</div>
+        <Brain class="selector-icon" :size="32" />
         <div>
           <h3>选择思维模型</h3>
           <p>AI 根据你的问题智能推荐了以下思维模型</p>
@@ -122,15 +214,15 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
         <div v-for="model in recommendedModelDetails" :key="model.id" 
              class="model-card" @click="selectModel(model.id)">
           <div class="model-badge">推荐</div>
-          <div class="model-icon-large">{{ model.icon }}</div>
+          <component :is="iconMap[model.icon]" class="model-icon-large" :size="56" stroke-width="1.5" />
           <h4 class="model-name">{{ model.name }}</h4>
           <p class="model-desc">{{ model.description }}</p>
           <div class="model-advantage">
-            <span class="advantage-icon">✨</span>
+            <Sparkles class="advantage-icon" :size="16" />
             <span>{{ model.advantage }}</span>
           </div>
           <div v-if="model.reason" class="model-reason">
-            <span class="reason-icon">💡</span>
+            <Lightbulb class="reason-icon" :size="16" />
             <span>{{ model.reason }}</span>
           </div>
           <div class="model-tags">
@@ -145,7 +237,7 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
       <!-- 当前模型展示 -->
       <div class="current-model-banner">
         <div class="model-info-compact">
-          <span class="model-icon-sm">{{ currentModel?.icon }}</span>
+          <component :is="iconMap[currentModel?.icon]" class="model-icon-sm" :size="36" stroke-width="1.5" />
           <div class="model-text">
             <div class="model-label">当前思维模型</div>
             <div class="model-name-lg">{{ thinkingModel }}</div>
@@ -154,7 +246,7 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
         <div class="model-meta">
           <span class="model-advantage-text">{{ currentModel?.advantage }}</span>
           <button class="btn-switch" @click="switchModel">
-            <span>🔄</span>
+            <RefreshCw :size="14" />
             <span>切换模型</span>
           </button>
         </div>
@@ -163,7 +255,7 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
       <!-- 分析维度总览 -->
       <div class="dimensions-overview">
         <h3 class="overview-title">
-          <span>📊</span>
+          <LayoutGrid :size="24" />
           <span>多维度分析</span>
           <span class="count-badge">{{ analysisCards.length }} 个维度</span>
         </h3>
@@ -174,17 +266,17 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
                :class="{ active: selectedDimension === card.id }"
                @click="selectDimension(card)">
             <div class="dimension-header">
-              <div class="dimension-icon">{{ card.icon }}</div>
+              <component :is="iconMap[card.icon] || HelpCircle" class="dimension-icon" :size="24" />
               <h4 class="dimension-title">{{ card.dimension }}</h4>
               <div class="dimension-actions">
                 <button class="action-btn" @click.stop="startEditCard(card)" title="编辑">
-                  <span>✏️</span>
+                  <Edit3 :size="14" />
                 </button>
                 <button class="action-btn" @click.stop="reanalyzeCard(card.id)" title="重新分析">
-                  <span>🔄</span>
+                  <RefreshCw :size="14" />
                 </button>
                 <button class="action-btn danger" @click.stop="deleteCard(card.id)" title="删除">
-                  <span>🗑️</span>
+                  <Trash2 :size="14" />
                 </button>
               </div>
             </div>
@@ -192,19 +284,19 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
             <!-- 编辑模式 -->
             <div v-if="editingCardId === card.id" class="dimension-edit" @click.stop>
               <div class="edit-section">
-                <label>📌 现象描述</label>
+                <label><Pin :size="14" /> 现象描述</label>
                 <textarea v-model="editingCardContent.phenomenon" class="edit-textarea" rows="2"></textarea>
               </div>
               <div class="edit-section">
-                <label>🔗 原因分析</label>
+                <label><Link :size="14" /> 原因分析</label>
                 <textarea v-model="editingCardContent.cause" class="edit-textarea" rows="2"></textarea>
               </div>
               <div class="edit-section">
-                <label>💥 影响评估</label>
+                <label><Zap :size="14" /> 影响评估</label>
                 <textarea v-model="editingCardContent.impact" class="edit-textarea" rows="2"></textarea>
               </div>
               <div class="edit-section">
-                <label>🔮 隐藏因素</label>
+                <label><Eye :size="14" /> 隐藏因素</label>
                 <textarea v-model="editingCardContent.hiddenFactors" class="edit-textarea" rows="2"></textarea>
               </div>
               <div class="edit-actions">
@@ -225,24 +317,24 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
               <!-- 完成状态 -->
               <template v-else>
                 <div class="content-section">
-                  <div class="section-label">📌 现象</div>
+                  <div class="section-label"><Pin :size="14" /> 现象</div>
                   <MarkdownViewer :content="card.phenomenon" class="section-text" />
                 </div>
                 
                 <div class="content-section">
-                  <div class="section-label">🔗 原因</div>
+                  <div class="section-label"><Link :size="14" /> 原因</div>
                   <MarkdownViewer :content="card.cause" class="section-text" />
                 </div>
                 
                 <Transition name="expand">
                   <div v-if="selectedDimension === card.id" class="expanded-content">
                     <div class="content-section">
-                      <div class="section-label">💥 影响</div>
+                      <div class="section-label"><Zap :size="14" /> 影响</div>
                       <MarkdownViewer :content="card.impact" class="section-text" />
                     </div>
                     
                     <div class="content-section">
-                      <div class="section-label">🔮 隐藏因素</div>
+                      <div class="section-label"><Eye :size="14" /> 隐藏因素</div>
                       <MarkdownViewer :content="card.hiddenFactors" class="section-text" />
                     </div>
                   </div>
@@ -259,12 +351,12 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
       
       <div class="actions-bar">
         <button class="btn btn-ghost" @click="goBack" :disabled="store.loading">
-          <span>←</span>
+          <ArrowLeft :size="16" />
           <span>返回上一步</span>
         </button>
         <button class="btn btn-primary btn-lg" @click="showAnalysisReport" :disabled="store.loading || analysisCards.some(c => c.status !== 'completed')">
           <span>{{ (store.loading || analysisCards.some(c => c.status !== 'completed')) ? '正在分析...' : '查看完整报告' }}</span>
-          <span>→</span>
+          <ArrowRight :size="16" />
         </button>
       </div>
     </div>
@@ -273,11 +365,20 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
     <div v-else class="report-section">
       <div class="report-card">
         <div class="report-header">
-          <h3>📊 深度分析报告</h3>
+          <h3>
+            <FileText class="icon" :size="20" /> 
+            深度分析报告
+          </h3>
           <div class="report-actions">
-            <button class="btn btn-sm btn-ghost" @click="showReport = false">← 返回</button>
-            <button v-if="!editingReport" class="btn btn-sm btn-ghost" @click="editReport">✏️ 编辑</button>
-            <button v-else class="btn btn-sm btn-primary" @click="saveReport">💾 保存</button>
+            <button class="btn btn-sm btn-ghost" @click="showReport = false">
+              <ArrowLeft :size="14" /> 返回
+            </button>
+            <button v-if="!editingReport" class="btn btn-sm btn-ghost" @click="editReport">
+              <Edit3 :size="14" /> 编辑
+            </button>
+            <button v-else class="btn btn-sm btn-primary" @click="saveReport">
+              <Save :size="14" /> 保存
+            </button>
           </div>
         </div>
         <div class="report-content">
@@ -285,8 +386,12 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
           <MarkdownViewer v-else :content="reportContent" />
         </div>
         <div class="report-footer">
-          <button class="btn btn-ghost" @click="goBack">← 返回上一步</button>
-          <button class="btn btn-primary btn-lg" @click="confirmAndNext">生成解决方案 →</button>
+          <button class="btn btn-ghost" @click="goBack">
+            <ArrowLeft :size="16" /> 返回上一步
+          </button>
+          <button class="btn btn-primary btn-lg" @click="confirmAndNext">
+            生成解决方案 <ArrowRight :size="16" />
+          </button>
         </div>
       </div>
     </div>
@@ -308,7 +413,7 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
 /* Model Selector */
 .model-selector { }
 .selector-header { display: flex; align-items: center; gap: var(--space-lg); padding: var(--space-xl); background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-xl); margin-bottom: var(--space-xl); }
-.selector-icon { font-size: 48px; /* filter: grayscale(1); Removed */ }
+.selector-icon { font-size: 48px; }
 .selector-header h3 { font-size: var(--text-2xl); margin-bottom: var(--space-xs); }
 .selector-header p { color: var(--color-text-muted); margin: 0; }
 .loading-models { display: flex; align-items: center; justify-content: center; gap: var(--space-md); padding: var(--space-3xl); color: var(--color-text-muted); }
@@ -317,14 +422,14 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
 .model-card { position: relative; padding: var(--space-xl); background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-xl); cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .model-card:hover { border-color: var(--color-border-hover); transform: translateY(-4px); box-shadow: var(--shadow-md); }
 .model-badge { position: absolute; top: var(--space-md); right: var(--space-md); padding: 4px 12px; background: var(--color-text-primary); color: var(--color-bg-card); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 600; }
-.model-icon-large { font-size: 56px; text-align: center; margin: var(--space-lg) 0; /* filter: grayscale(1); Removed */ }
+.model-icon-large { font-size: 56px; text-align: center; margin: var(--space-lg) 0; }
 .model-name { font-size: var(--text-xl); font-weight: 600; text-align: center; margin-bottom: var(--space-sm); color: var(--color-text-primary); }
 .model-desc { font-size: var(--text-sm); color: var(--color-text-secondary); text-align: center; margin-bottom: var(--space-md); line-height: 1.6; }
 .model-advantage { display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--color-bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--space-sm); }
-.advantage-icon { font-size: 16px; flex-shrink: 0; /* filter: grayscale(1); Removed */ }
+.advantage-icon { font-size: 16px; flex-shrink: 0; }
 .model-advantage span:last-child { font-size: var(--text-sm); color: var(--color-text-primary); line-height: 1.5; font-weight: 500; }
 .model-reason { display: flex; align-items: flex-start; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); border: 1px dashed var(--color-border); border-radius: var(--radius-md); margin-bottom: var(--space-md); }
-.reason-icon { font-size: 16px; flex-shrink: 0; filter: grayscale(1); /* Keep greyscale for reason icon maybe? No, remove all per user request */ }
+.reason-icon { font-size: 16px; flex-shrink: 0; }
 .model-reason span:last-child { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.5; }
 .model-tags { display: flex; flex-wrap: wrap; gap: var(--space-xs); justify-content: center; }
 .model-tag { padding: 4px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-full); font-size: var(--text-xs); color: var(--color-text-secondary); background: transparent; }
@@ -352,7 +457,7 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
 .dimension-card.active { border-color: var(--color-border-active); box-shadow: var(--shadow-md); border-width: 2px; }
 
 .dimension-header { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-lg); background: transparent; border-bottom: 1px solid var(--color-border); }
-.dimension-icon { font-size: var(--text-2xl); /* filter: grayscale(1); Removed */ }
+.dimension-icon { font-size: var(--text-2xl); }
 .dimension-title { flex: 1; font-size: var(--text-lg); font-weight: 600; margin: 0; color: var(--color-text-primary); }
 .dimension-actions { display: flex; gap: var(--space-xs); }
 .action-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid transparent; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; color: var(--color-text-secondary); }

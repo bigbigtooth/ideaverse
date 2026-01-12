@@ -5,6 +5,23 @@ import { getApiKey, setApiKey } from '../services/ai'
 import { getPrompts, savePrompts, resetPrompts, resetPrompt } from '../services/prompts'
 import * as storage from '../services/storage'
 import '../styles/SettingsView.css'
+import { 
+  Eye, 
+  EyeOff, 
+  Save, 
+  Check, 
+  Lightbulb, 
+  BarChart, 
+  Bot, 
+  ChevronUp, 
+  ChevronDown, 
+  Package, 
+  AlertTriangle, 
+  Trash2, 
+  Info, 
+  Settings,
+  Key
+} from 'lucide-vue-next'
 
 const router = useRouter()
 
@@ -83,7 +100,9 @@ function goHome() {
         <button class="btn btn-ghost" @click="goHome">
           ← 返回首页
         </button>
-        <h1 class="page-title">⚙️ 设置</h1>
+        <h1 class="page-title">
+          <Settings class="title-icon" :size="32" /> 设置
+        </h1>
         <div style="width: 100px;"></div>
       </div>
     </header>
@@ -94,7 +113,7 @@ function goHome() {
         <div class="settings-content">
           <!-- API Key 设置 -->
           <section class="settings-section">
-            <h2 class="section-title">🔑 API 配置</h2>
+            <h2 class="section-title"><Key class="section-icon" :size="24" /> API 配置</h2>
             <p class="section-desc">
               配置 DeepSeek API Key 以启用 AI 功能。
               <a href="https://platform.deepseek.com/" target="_blank" rel="noopener">
@@ -115,7 +134,8 @@ function goHome() {
                   class="toggle-btn"
                   @click="showKey = !showKey"
                 >
-                  {{ showKey ? '🙈 隐藏' : '👁️ 显示' }}
+                  <component :is="showKey ? EyeOff : Eye" :size="16" />
+                  {{ showKey ? '隐藏' : '显示' }}
                 </button>
               </div>
               
@@ -125,19 +145,19 @@ function goHome() {
                   @click="saveApiKey"
                   :disabled="!apiKey.trim()"
                 >
-                  💾 保存
+                  <Save :size="16" /> 保存
                 </button>
-                <span v-if="saved" class="save-success">✅ 已保存</span>
+                <span v-if="saved" class="save-success"><Check :size="16" /> 已保存</span>
               </div>
             </div>
             
             <div class="api-info">
               <div class="info-item">
-                <span class="info-icon">💡</span>
+                <Lightbulb class="info-icon" :size="16" />
                 <span>API Key 仅保存在本地浏览器中，不会上传到任何服务器</span>
               </div>
               <div class="info-item">
-                <span class="info-icon">📊</span>
+                <BarChart class="info-icon" :size="16" />
                 <span>使用 DeepSeek Chat 模型，按 API 调用次数计费</span>
               </div>
             </div>
@@ -146,7 +166,7 @@ function goHome() {
           <!-- AI 提示词设置 -->
           <section class="settings-section">
             <div class="section-header">
-              <h2 class="section-title">🤖 AI 提示词配置</h2>
+              <h2 class="section-title"><Bot class="section-icon" :size="24" /> AI 提示词配置</h2>
               <button class="btn btn-sm btn-ghost" @click="handleResetAllPrompts">重置所有</button>
             </div>
             <p class="section-desc">
@@ -164,7 +184,7 @@ function goHome() {
                   </div>
                   <div class="prompt-actions">
                     <button class="btn-icon">
-                      {{ expandedPrompt === key ? '🔼' : '🔽' }}
+                      <component :is="expandedPrompt === key ? ChevronUp : ChevronDown" :size="16" />
                     </button>
                   </div>
                 </div>
@@ -178,9 +198,11 @@ function goHome() {
                   <div class="editor-actions">
                     <button class="btn btn-sm btn-ghost" @click="handleResetPrompt(key)">重置此项</button>
                     <button class="btn btn-sm btn-primary" @click="savePromptSettings">
-                      保存修改
+                      <Save :size="14" /> 保存修改
                     </button>
-                    <span v-if="promptSaved" class="save-success">✅ 已保存</span>
+                    <span v-if="promptSaved" class="save-success">
+                      <Check :size="14" /> 已保存
+                    </span>
                   </div>
                 </div>
               </div>
@@ -189,26 +211,32 @@ function goHome() {
           
           <!-- 数据管理 -->
           <section class="settings-section">
-            <h2 class="section-title">📦 数据管理</h2>
+            <h2 class="section-title">
+              <Package class="section-icon" :size="24" /> 数据管理
+            </h2>
             <p class="section-desc">
               所有数据保存在浏览器本地存储中。清除浏览器数据会导致数据丢失。
             </p>
             
             <div class="danger-zone">
-              <h3 class="danger-title">⚠️ 危险操作</h3>
+              <h3 class="danger-title">
+                <AlertTriangle class="danger-icon" :size="20" /> 危险操作
+              </h3>
               <p class="danger-desc">清除所有本地数据，包括历史记录和设置</p>
               <button 
                 class="btn btn-danger"
                 @click="clearAllData"
               >
-                🗑️ 清除所有数据
+                <Trash2 :size="16" /> 清除所有数据
               </button>
             </div>
           </section>
           
           <!-- 关于 -->
           <section class="settings-section">
-            <h2 class="section-title">ℹ️ 关于</h2>
+            <h2 class="section-title">
+              <Info class="section-icon" :size="24" /> 关于
+            </h2>
             <div class="about-content">
               <div class="about-item">
                 <span class="about-label">版本</span>

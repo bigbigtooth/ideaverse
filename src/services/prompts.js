@@ -92,12 +92,12 @@ export const DEFAULT_PROMPTS = {
     {
       "id": 1,
       "dimension": "维度名称",
-      "icon": "emoji图标",
+      "icon": "Lucide icon name (e.g. Target, Users, Zap)",
       "description": "该维度的分析方向简述"
     }
   ]
 }
-\`\`\``
+\`\`\` `
   },
   analysis_card_system: {
     id: 'analysis_card_system',
@@ -144,7 +144,7 @@ export const DEFAULT_PROMPTS = {
 {
   "id": {cardId},
   "dimension": "分析维度名称",
-  "icon": "emoji图标",
+  "icon": "Lucide icon name (e.g. Target, Users, Zap)",
   "phenomenon": "现象描述",
   "cause": "原因分析",
   "impact": "影响评估",
@@ -292,7 +292,7 @@ export const DEFAULT_PROMPTS = {
     {
       "id": 1,
       "dimension": "分析维度名称（纯文本）",
-      "icon": "🔍",
+      "icon": "Lucide icon name (e.g. Target)",
       "phenomenon": "现象描述（纯文本，不要用**标记）",
       "cause": "原因分析（纯文本）",
       "impact": "影响评估（纯文本）",
@@ -332,7 +332,7 @@ export const DEFAULT_PROMPTS = {
     {
       "id": 1,
       "dimension": "分析维度名称",
-      "icon": "emoji图标",
+      "icon": "Lucide icon name (e.g. Target)",
       "phenomenon": "现象描述",
       "cause": "原因分析",
       "impact": "影响评估",

@@ -1,6 +1,20 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'
+import { 
+  Target, 
+  CheckCircle, 
+  RefreshCw, 
+  FileText, 
+  Edit3, 
+  Save, 
+  ArrowRight, 
+  ArrowLeft,
+  Pin,
+  Search,
+  Ruler,
+  Lightbulb
+} from 'lucide-vue-next'
 
 const store = useThinkingStore()
 
@@ -102,7 +116,10 @@ function restartInterview() {
 <template>
   <div class="step1">
     <div class="step-header">
-      <h2 class="step-title"><span>🎯</span> 步骤一：问题理解</h2>
+      <h2 class="step-title">
+        <Target class="title-icon" :size="32" stroke-width="2.5" /> 
+        步骤一：问题理解
+      </h2>
       <p class="step-desc">通过几个问题，帮助我更好地理解你的深思问题</p>
     </div>
     
@@ -135,7 +152,9 @@ function restartInterview() {
           </div>
         </div>
         <div class="question-nav">
-          <button class="btn btn-ghost" :disabled="currentQuestionIndex === 0" @click="goToPrevQuestion">← 上一题</button>
+          <button class="btn btn-ghost" :disabled="currentQuestionIndex === 0" @click="goToPrevQuestion">
+            <ArrowLeft :size="16" /> 上一题
+          </button>
         </div>
       </div>
     </div>
@@ -143,7 +162,7 @@ function restartInterview() {
     <!-- 生成报告 -->
     <div v-else-if="allAnswered && !showReport" class="complete-section">
       <div class="complete-card">
-        <div class="complete-icon">✅</div>
+        <CheckCircle class="complete-icon" :size="48" />
         <h3>采访完成</h3>
         <p>已回答 {{ answers.length }} 个问题，现在可以生成分析报告</p>
         <div class="answers-preview">
@@ -153,8 +172,12 @@ function restartInterview() {
           </div>
         </div>
         <div class="complete-actions">
-          <button class="btn btn-ghost" @click="restartInterview">🔄 重新回答</button>
-          <button class="btn btn-primary btn-lg" @click="generateReport">📝 生成分析报告</button>
+          <button class="btn btn-ghost" @click="restartInterview">
+            <RefreshCw :size="16" /> 重新回答
+          </button>
+          <button class="btn btn-primary btn-lg" @click="generateReport">
+            <FileText :size="16" /> 生成分析报告
+          </button>
         </div>
       </div>
     </div>
@@ -163,22 +186,29 @@ function restartInterview() {
     <div v-else-if="showReport && understandingReport" class="report-section">
       <div class="report-card">
         <div class="report-header">
-          <h3>📋 问题理解分析报告</h3>
-          <button v-if="!editingReport" class="btn btn-sm btn-ghost" @click="editingReport = true">✏️ 编辑</button>
-          <button v-else class="btn btn-sm btn-primary" @click="saveReportEdit">💾 保存</button>
+          <h3>
+            <FileText :size="20" class="header-icon" /> 
+            问题理解分析报告
+          </h3>
+          <button v-if="!editingReport" class="btn btn-sm btn-ghost" @click="editingReport = true">
+            <Edit3 :size="14" /> 编辑
+          </button>
+          <button v-else class="btn btn-sm btn-primary" @click="saveReportEdit">
+            <Save :size="14" /> 保存
+          </button>
         </div>
         
         <div class="report-content">
           <!-- 核心总结 -->
           <div class="report-block">
-            <h4>🎯 核心总结</h4>
+            <h4><Target :size="16" /> 核心总结</h4>
             <textarea v-if="editingReport" v-model="editedSummary" class="input textarea" rows="3"></textarea>
             <p v-else>{{ understandingReport.summary }}</p>
           </div>
           
           <!-- 关键要点 -->
           <div class="report-block">
-            <h4>📌 关键要点</h4>
+            <h4><Pin :size="16" /> 关键要点</h4>
             <textarea v-if="editingReport" v-model="editedKeyPoints" class="input textarea" placeholder="每行一个要点" rows="4"></textarea>
             <ul v-else class="key-points">
               <li v-for="(point, i) in understandingReport.keyPoints" :key="i">{{ point }}</li>
@@ -187,7 +217,7 @@ function restartInterview() {
           
           <!-- 关注领域 -->
           <div v-if="understandingReport.focusAreas?.length" class="report-block">
-            <h4>🔍 关注领域</h4>
+            <h4><Search :size="16" /> 关注领域</h4>
             <div class="focus-tags">
               <span v-for="(area, i) in understandingReport.focusAreas" :key="i" class="focus-tag">{{ area }}</span>
             </div>
@@ -195,21 +225,25 @@ function restartInterview() {
           
           <!-- 问题边界 -->
           <div class="report-block">
-            <h4>📐 问题边界</h4>
+            <h4><Ruler :size="16" /> 问题边界</h4>
             <textarea v-if="editingReport" v-model="editedScope" class="input textarea" rows="2"></textarea>
             <p v-else>{{ understandingReport.scope }}</p>
           </div>
           
           <!-- 深层需求 -->
           <div v-if="understandingReport.deeperNeeds" class="report-block">
-            <h4>💡 深层需求</h4>
+            <h4><Lightbulb :size="16" /> 深层需求</h4>
             <p>{{ understandingReport.deeperNeeds }}</p>
           </div>
         </div>
         
         <div class="report-footer">
-          <button class="btn btn-ghost" @click="restartInterview">🔄 重新采访</button>
-          <button class="btn btn-primary btn-lg" @click="confirmAndNext">确认并进入深度分析 →</button>
+          <button class="btn btn-ghost" @click="restartInterview">
+            <RefreshCw :size="16" /> 重新采访
+          </button>
+          <button class="btn btn-primary btn-lg" @click="confirmAndNext">
+            确认并进入深度分析 <ArrowRight :size="16" />
+          </button>
         </div>
       </div>
     </div>
@@ -242,7 +276,7 @@ function restartInterview() {
 .question-nav { display: flex; justify-content: flex-start; }
 .complete-section { max-width: 600px; margin: 0 auto; }
 .complete-card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-2xl); text-align: center; }
-.complete-icon { font-size: 48px; margin-bottom: var(--space-md); filter: grayscale(1); }
+.complete-icon { font-size: 48px; margin-bottom: var(--space-md); }
 .complete-card h3 { font-size: var(--text-xl); margin-bottom: var(--space-sm); color: var(--color-text-primary); }
 .complete-card > p { color: var(--color-text-secondary); margin-bottom: var(--space-lg); }
 .answers-preview { text-align: left; background: var(--color-bg-tertiary); border-radius: var(--radius-lg); padding: var(--space-md); margin-bottom: var(--space-xl); max-height: 200px; overflow-y: auto; border: 1px solid var(--color-border); }

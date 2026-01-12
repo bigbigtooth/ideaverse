@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { Brain, Timer, Lightbulb } from 'lucide-vue-next'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -7,14 +8,14 @@ const props = defineProps({
 })
 
 const tips = [
-  '💡 深度思考需要时间，好的分析值得等待',
-  '🧠 AI 正在调用多个思维模型帮你分析',
-  '📊 正在从多个维度拆解你的问题',
-  '🔍 区分"相关性"和"因果性"是深度思考的关键',
-  '💭 好问题往往比答案更重要',
-  '🎯 问题=现象×原因×影响',
-  '📈 麦肯锡 MECE 原则：相互独立，完全穷尽',
-  '🌟 5W2H 帮你全方位理解问题'
+  '深度思考需要时间，好的分析值得等待',
+  'AI 正在调用多个思维模型帮你分析',
+  '正在从多个维度拆解你的问题',
+  '区分"相关性"和"因果性"是深度思考的关键',
+  '好问题往往比答案更重要',
+  '问题=现象×原因×影响',
+  '麦肯锡 MECE 原则：相互独立，完全穷尽',
+  '5W2H 帮你全方位理解问题'
 ]
 
 const currentTip = ref(tips[0])
@@ -78,7 +79,7 @@ function formatTime(seconds) {
       <div class="loading-content">
         <!-- 动画图标 -->
         <div class="brain-animation">
-          <div class="brain-icon">🧠</div>
+          <Brain class="brain-icon" :size="48" />
           <div class="pulse-ring"></div>
           <div class="pulse-ring delay-1"></div>
           <div class="pulse-ring delay-2"></div>
@@ -89,7 +90,7 @@ function formatTime(seconds) {
         
         <!-- 已用时间 -->
         <div class="elapsed-time">
-          <span class="time-icon">⏱️</span>
+          <Timer class="time-icon" :size="16" />
           已用时 {{ formatTime(elapsedTime) }}
         </div>
         
@@ -103,6 +104,7 @@ function formatTime(seconds) {
         
         <!-- 轮播提示 -->
         <div class="tip-card">
+          <Lightbulb class="tip-icon" :size="20" />
           <Transition name="tip-fade" mode="out-in">
             <div :key="currentTip" class="tip-content">{{ currentTip }}</div>
           </Transition>
@@ -146,8 +148,7 @@ function formatTime(seconds) {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 48px;
-  filter: grayscale(1);
+  color: var(--color-accent-primary);
   animation: float 2s ease-in-out infinite;
 }
 
@@ -239,6 +240,12 @@ function formatTime(seconds) {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-md);
+}
+
+.tip-icon {
+  color: var(--color-accent-gold);
+  flex-shrink: 0;
 }
 
 .tip-content {

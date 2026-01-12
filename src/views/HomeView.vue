@@ -3,6 +3,17 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThinkingStore } from '../stores/thinking'
 import { hasApiKey } from '../services/ai'
+import { 
+  History, 
+  Settings, 
+  Brain, 
+  AlertTriangle, 
+  Sparkles, 
+  Rocket, 
+  Target, 
+  Search, 
+  Lightbulb 
+} from 'lucide-vue-next'
 import logoImage from '../assets/logo.png'
 import '../styles/HomeView.css'
 
@@ -48,11 +59,11 @@ function goToHistory() {
         </div>
         <nav class="nav">
           <button class="btn btn-ghost" @click="goToHistory">
-            <span class="nav-icon">📚</span>
+            <History class="nav-icon" :size="20" />
             <span class="nav-text">历史记录</span>
           </button>
           <button class="btn btn-ghost" @click="goToSettings">
-            <span class="nav-icon">⚙️</span>
+            <Settings class="nav-icon" :size="20" />
             <span class="nav-text">设置</span>
           </button>
         </nav>
@@ -64,7 +75,10 @@ function goToHistory() {
       <div class="container">
         <!-- Hero 区域 -->
         <section class="hero">
-          <div class="hero-badge">🧠 AI 驱动的深度思考助手</div>
+          <div class="hero-badge">
+            <Brain :size="16" />
+            <span>AI 驱动的深度思考助手</span>
+          </div>
           <h1 class="hero-title">
             在思维的旷野，为你画出路径
           </h1>
@@ -74,7 +88,7 @@ function goToHistory() {
           
           <!-- API Key 警告 -->
           <div v-if="showApiKeyWarning" class="api-warning">
-            <span class="warning-icon">⚠️</span>
+            <AlertTriangle class="warning-icon" :size="16" />
             <span>请先配置 DeepSeek API Key 以启用 AI 功能</span>
             <button class="btn btn-sm btn-primary" @click="goToSettings">
               去配置
@@ -86,7 +100,7 @@ function goToHistory() {
         <section class="input-section">
           <div class="input-card">
             <div class="input-header">
-              <span class="input-icon">✨</span>
+              <Sparkles class="input-icon" :size="20" />
               <span>请输入你需要深度思考的问题</span>
             </div>
             <textarea 
@@ -102,7 +116,8 @@ function goToHistory() {
                 :disabled="!problemInput.trim()"
                 @click="startThinking"
               >
-                🚀 开始深度思考
+                <Rocket class="btn-icon" :size="20" />
+                <span>开始深度思考</span>
               </button>
             </div>
           </div>
@@ -114,7 +129,7 @@ function goToHistory() {
           <div class="features-grid">
             <div class="feature-card">
               <div class="feature-number">01</div>
-              <div class="feature-icon">🎯</div>
+              <Target class="feature-icon" :size="48" stroke-width="1.5" />
               <h3 class="feature-title">问题理解</h3>
               <p class="feature-desc">
                 通过智能采访问答，多角度理解问题本质，生成问题理解分析报告
@@ -122,7 +137,7 @@ function goToHistory() {
             </div>
             <div class="feature-card">
               <div class="feature-number">02</div>
-              <div class="feature-icon">🔍</div>
+              <Search class="feature-icon" :size="48" stroke-width="1.5" />
               <h3 class="feature-title">深度分析</h3>
               <p class="feature-desc">
                 运用 5W2H、MECE 等思维模型，拆解问题，识别隐藏因素
@@ -130,7 +145,7 @@ function goToHistory() {
             </div>
             <div class="feature-card">
               <div class="feature-number">03</div>
-              <div class="feature-icon">💡</div>
+              <Lightbulb class="feature-icon" :size="48" stroke-width="1.5" />
               <h3 class="feature-title">方案评估</h3>
               <p class="feature-desc">
                 头脑风暴生成方案，结构化评估有效性、可行性与可持续性
@@ -166,4 +181,15 @@ function goToHistory() {
   </div>
 </template>
 
-<!-- Styles are imported from ../styles/HomeView.css -->
+<style scoped>
+/* 样式微调，配合 Lucide 图标 */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.hero-icon {
+  color: var(--color-accent-primary);
+}
+</style>

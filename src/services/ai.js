@@ -16,7 +16,7 @@ export const THINKING_MODELS = {
   'MECE': {
     id: 'MECE',
     name: 'MECE 分解法',
-    icon: '🎯',
+    icon: 'Target',
     category: '逻辑思考',
     description: '相互独立，完全穷尽。将复杂问题分解为不重叠、不遗漏的子问题。',
     advantage: '确保分析无遗漏、无重复，是战略咨询的黄金法则',
@@ -25,7 +25,7 @@ export const THINKING_MODELS = {
   'PyramidPrinciple': {
     id: 'PyramidPrinciple',
     name: '金字塔原理',
-    icon: '🔺',
+    icon: 'Triangle',
     category: '逻辑思考',
     description: '结论先行、以上统下、归类分组、逻辑递进的思考与表达框架。',
     advantage: '提升沟通效率与说服力，让观点清晰有力',
@@ -34,7 +34,7 @@ export const THINKING_MODELS = {
   'SixThinkingHats': {
     id: 'SixThinkingHats',
     name: '六顶思考帽',
-    icon: '🎩',
+    icon: 'Brain',
     category: '逻辑思考',
     description: '通过六种不同思考视角（白/红/黑/黄/绿/蓝帽）激活多元思维。',
     advantage: '避免单一偏见，实现平行思考，提升团队协作效率',
@@ -43,7 +43,7 @@ export const THINKING_MODELS = {
   'PREP': {
     id: 'PREP',
     name: 'PREP 法',
-    icon: '📝',
+    icon: 'FileText',
     category: '逻辑思考',
     description: '结论-理由-例证-结论的结构化表达方法。',
     advantage: '实现逻辑清晰的表达，快速抓住听众注意力',
@@ -52,7 +52,7 @@ export const THINKING_MODELS = {
   'InductiveDeductive': {
     id: 'InductiveDeductive',
     name: '归纳演绎法',
-    icon: '🔄',
+    icon: 'GitBranch',
     category: '逻辑思考',
     description: '归纳法从具体事例总结规律，演绎法从一般原理推导具体结论。',
     advantage: '双管齐下的推理方式，确保论证严密性',
@@ -63,7 +63,7 @@ export const THINKING_MODELS = {
   'WrittenBrainstorming': {
     id: 'WrittenBrainstorming',
     name: '书面头脑风暴法',
-    icon: '✍️',
+    icon: 'Edit3',
     category: '创意思维',
     description: '通过书面形式（635法）收集创意，确保每个人观点被平等重视。',
     advantage: '避免口头讨论的偏见，让内向者也能充分参与',
@@ -72,7 +72,7 @@ export const THINKING_MODELS = {
   'KJMethod': {
     id: 'KJMethod',
     name: 'KJ 法',
-    icon: '🗂️',
+    icon: 'LayoutGrid',
     category: '创意思维',
     description: '通过卡片分类整合碎片化信息，形成系统性创意。',
     advantage: '将杂乱信息转化为有序知识结构',
@@ -81,7 +81,7 @@ export const THINKING_MODELS = {
   'MandalaThinking': {
     id: 'MandalaThinking',
     name: '曼陀罗思考法',
-    icon: '☸️',
+    icon: 'Grid',
     category: '创意思维',
     description: '利用九宫格发散思维，从多角度探索问题解决方案。',
     advantage: '强制发散思考，探索8个不同维度的可能性',
@@ -90,7 +90,7 @@ export const THINKING_MODELS = {
   'SCAMPER': {
     id: 'SCAMPER',
     name: 'SCAMPER 法',
-    icon: '💡',
+    icon: 'Lightbulb',
     category: '创意思维',
     description: '通过替代、合并、改造、修改、改变用途、去除、反转7个维度激发创新。',
     advantage: '系统化创新思维工具，快速突破思维定式',
@@ -99,7 +99,7 @@ export const THINKING_MODELS = {
   'ProsConsList': {
     id: 'ProsConsList',
     name: '利弊均衡表',
-    icon: '⚖️',
+    icon: 'Scale',
     category: '创意思维',
     description: '直观对比决策选项的优势与风险，辅助理性判断。',
     advantage: '一目了然的优劣势对比，减少决策盲点',
@@ -110,7 +110,7 @@ export const THINKING_MODELS = {
   '5W2H': {
     id: '5W2H',
     name: '5W2H 分析法',
-    icon: '🔍',
+    icon: 'Search',
     category: '问题解决',
     description: 'What/Why/Who/When/Where/How/How much，七个维度全面分析。',
     advantage: '快速建立问题的完整画像，避免遗漏关键信息',
@@ -119,7 +119,7 @@ export const THINKING_MODELS = {
   'LogicTree': {
     id: 'LogicTree',
     name: '逻辑树',
-    icon: '🌳',
+    icon: 'Network',
     category: '问题解决',
     description: '将复杂问题逐层分解为可执行的子议题，形成树状结构。',
     advantage: '系统化拆解问题，确保解决方案的完整性',
@@ -128,7 +128,7 @@ export const THINKING_MODELS = {
   'SkyRainUmbrella': {
     id: 'SkyRainUmbrella',
     name: '空雨伞模型',
-    icon: '☂️',
+    icon: 'Umbrella',
     category: '问题解决',
     description: '基于事实(空)→解读(雨)→行动(伞)的快速决策框架。',
     advantage: '从事实到行动的完整逻辑链，避免盲目决策',
@@ -137,7 +137,7 @@ export const THINKING_MODELS = {
   'EisenhowerMatrix': {
     id: 'EisenhowerMatrix',
     name: '重要度/紧急度矩阵',
-    icon: '📋',
+    icon: 'ListChecks',
     category: '问题解决',
     description: '将任务按重要性和紧急性分为四个象限，优化时间管理。',
     advantage: '聚焦高价值任务，避免被琐事牵着走',
@@ -146,7 +146,7 @@ export const THINKING_MODELS = {
   'HypothesisThinking': {
     id: 'HypothesisThinking',
     name: '假设思考',
-    icon: '🎯',
+    icon: 'Target',
     category: '问题解决',
     description: '以假设为导向快速聚焦关键问题，避免盲目分析。',
     advantage: '快速验证假设，提升分析效率',
@@ -157,7 +157,7 @@ export const THINKING_MODELS = {
   'SWOT': {
     id: 'SWOT',
     name: 'SWOT 分析',
-    icon: '📊',
+    icon: 'LayoutDashboard',
     category: '市场营销',
     description: '优势、劣势、机会、威胁四象限分析框架。',
     advantage: '快速识别内外部因素，制定差异化策略',
@@ -166,7 +166,7 @@ export const THINKING_MODELS = {
   'PEST': {
     id: 'PEST',
     name: 'PEST 宏观分析',
-    icon: '🌍',
+    icon: 'Globe',
     category: '市场营销',
     description: '政治、经济、社会、技术四大宏观环境因素分析。',
     advantage: '把握外部大趋势，识别系统性风险和机遇',
@@ -175,7 +175,7 @@ export const THINKING_MODELS = {
   'Model3C': {
     id: 'Model3C',
     name: '3C 分析',
-    icon: '🔺',
+    icon: 'Users',
     category: '市场营销',
     description: '从公司、顾客、竞争者三维度制定竞争战略。',
     advantage: '大前研一经典模型，全方位审视竞争态势',
@@ -184,7 +184,7 @@ export const THINKING_MODELS = {
   'STPAnalysis': {
     id: 'STPAnalysis',
     name: 'STP 分析',
-    icon: '🎯',
+    icon: 'Crosshair',
     category: '市场营销',
     description: '通过市场细分、目标选择和定位构建差异化优势。',
     advantage: '精准定位目标市场，提升营销效率',
@@ -193,7 +193,7 @@ export const THINKING_MODELS = {
   'FiveForces': {
     id: 'FiveForces',
     name: '波特五力分析',
-    icon: '⚔️',
+    icon: 'Shield',
     category: '市场营销',
     description: '评估行业竞争强度，分析现有竞争者、潜在进入者、替代品、供应商和客户议价能力。',
     advantage: '迈克尔波特经典模型，全面评估行业竞争环境',
@@ -202,7 +202,7 @@ export const THINKING_MODELS = {
   '4Ps': {
     id: '4Ps',
     name: '市场营销组合 (4P)',
-    icon: '📦',
+    icon: 'Package',
     category: '市场营销',
     description: '整合产品、价格、渠道、推广四个要素形成系统营销策略。',
     advantage: '营销决策的基础框架，确保营销策略的完整性',
@@ -211,7 +211,7 @@ export const THINKING_MODELS = {
   'AIDMA': {
     id: 'AIDMA',
     name: 'AIDMA 模型',
-    icon: '🛒',
+    icon: 'ShoppingCart',
     category: '市场营销',
     description: '描述消费者从注意到行动的心理转化过程：注意-兴趣-欲望-记忆-行动。',
     advantage: '理解消费者决策路径，优化营销触点',
@@ -220,7 +220,7 @@ export const THINKING_MODELS = {
   'ProductLifecycle': {
     id: 'ProductLifecycle',
     name: '产品生命周期',
-    icon: '📈',
+    icon: 'TrendingUp',
     category: '市场营销',
     description: '根据导入、成长、成熟、衰退阶段制定动态策略。',
     advantage: '把握产品发展阶段，提前布局下一阶段',
@@ -229,7 +229,7 @@ export const THINKING_MODELS = {
   'BCGMatrix': {
     id: 'BCGMatrix',
     name: '波士顿矩阵',
-    icon: '📊',
+    icon: 'PieChart',
     category: '市场营销',
     description: '根据市场增长率与份额将业务分类，优化投资组合。',
     advantage: '波士顿咨询经典模型，指导资源分配',
@@ -240,7 +240,7 @@ export const THINKING_MODELS = {
   'PDCA': {
     id: 'PDCA',
     name: 'PDCA 循环',
-    icon: '🔄',
+    icon: 'RotateCw',
     category: '组织团队',
     description: '计划-执行-检查-处理的持续改进闭环管理方法。',
     advantage: '戴明环经典模型，实现螺旋式持续改进',
@@ -249,7 +249,7 @@ export const THINKING_MODELS = {
   'SevenSModel': {
     id: 'SevenSModel',
     name: '7S 模型',
-    icon: '🏢',
+    icon: 'Layers',
     category: '组织团队',
     description: '从战略、结构、系统、人员、技能、风格、价值观七个维度实现组织协同。',
     advantage: '麦肯锡经典组织诊断框架，全方位审视组织',
@@ -258,7 +258,7 @@ export const THINKING_MODELS = {
   'MaslowHierarchy': {
     id: 'MaslowHierarchy',
     name: '马斯洛需求理论',
-    icon: '🪜',
+    icon: 'Signal',
     category: '组织团队',
     description: '基于生理、安全、社交、尊重、自我实现需求层次激励团队。',
     advantage: '理解人类需求层次，设计有效激励机制',
@@ -267,7 +267,7 @@ export const THINKING_MODELS = {
   'RootCause': {
     id: 'RootCause',
     name: '根因分析法',
-    icon: '🔬',
+    icon: 'Microscope',
     category: '问题解决',
     description: '通过连续追问"为什么"，深挖问题根本原因。',
     advantage: '穿透表象直达本质，避免治标不治本',
@@ -276,7 +276,7 @@ export const THINKING_MODELS = {
   'ParetoAnalysis': {
     id: 'ParetoAnalysis',
     name: '帕累托分析',
-    icon: '📈',
+    icon: 'BarChart',
     category: '问题解决',
     description: '80/20 法则，找出影响 80% 结果的 20% 关键因素。',
     advantage: '聚焦关键少数，提升资源利用效率',
@@ -287,7 +287,7 @@ export const THINKING_MODELS = {
   'AnsoffMatrix': {
     id: 'AnsoffMatrix',
     name: '安索夫矩阵',
-    icon: '📊',
+    icon: 'Move',
     category: '经营战略',
     description: '基于现有/新市场与产品的组合制定增长战略。',
     advantage: '系统化思考增长路径，避免盲目扩张',
@@ -296,7 +296,7 @@ export const THINKING_MODELS = {
   'PortersGenericStrategies': {
     id: 'PortersGenericStrategies',
     name: '波特三大战略',
-    icon: '⚔️',
+    icon: 'Swords',
     category: '经营战略',
     description: '通过成本领先、差异化、集中化构建竞争优势。',
     advantage: '迈克尔波特经典竞争战略模型',
@@ -305,7 +305,7 @@ export const THINKING_MODELS = {
   'ValueChain': {
     id: 'ValueChain',
     name: '价值链分析',
-    icon: '🔗',
+    icon: 'Link',
     category: '经营战略',
     description: '拆解企业活动，识别价值创造和成本构成。',
     advantage: '发现竞争优势来源和成本优化空间',
@@ -314,7 +314,7 @@ export const THINKING_MODELS = {
   'ScenarioPlanning': {
     id: 'ScenarioPlanning',
     name: '情景规划法',
-    icon: '🎭',
+    icon: 'Drama',
     category: '经营战略',
     description: '构建多种未来情景，制定应对策略。',
     advantage: '应对不确定性，提高战略灵活性',
@@ -323,7 +323,7 @@ export const THINKING_MODELS = {
   'DecisionMatrix': {
     id: 'DecisionMatrix',
     name: '决策矩阵',
-    icon: '⚖️',
+    icon: 'Calculator',
     category: '问题解决',
     description: '多标准加权评分，量化比较不同选项。',
     advantage: '让决策过程透明可追溯，减少主观偏见',
@@ -332,7 +332,7 @@ export const THINKING_MODELS = {
   'StakeholderAnalysis': {
     id: 'StakeholderAnalysis',
     name: '利益相关者分析',
-    icon: '👥',
+    icon: 'Users',
     category: '组织团队',
     description: '识别并分析所有相关方的利益诉求和影响力。',
     advantage: '预判阻力来源，设计针对性沟通策略',

@@ -1,4 +1,6 @@
 <script setup>
+import { Check } from 'lucide-vue-next'
+
 defineProps({
   currentStep: {
     type: Number,
@@ -25,7 +27,7 @@ const steps = [
           }"
         >
           <div class="step-number">
-            <span v-if="currentStep > step.number">✓</span>
+            <Check v-if="currentStep > step.number" :size="20" stroke-width="3" />
             <span v-else>{{ step.number }}</span>
           </div>
           <span class="step-label">{{ step.label }}</span>

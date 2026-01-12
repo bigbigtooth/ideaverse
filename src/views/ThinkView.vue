@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useThinkingStore } from '../stores/thinking'
 import logoImage from '../assets/logo.png'
 import '../styles/ThinkView.css'
+import { AlertCircle, X } from 'lucide-vue-next'
 
 // 子组件
 import StepProgress from '../components/common/StepProgress.vue'
@@ -93,10 +94,10 @@ function goHome() {
       <div class="container">
         <!-- 错误提示 -->
         <div v-if="store.error" class="error-banner">
-          <span class="error-icon">❌</span>
+          <AlertCircle class="error-icon" :size="20" />
           <span>{{ store.error }}</span>
           <button class="btn btn-sm btn-ghost" @click="store.clearError">
-            关闭
+            <X :size="16" />
           </button>
         </div>
         

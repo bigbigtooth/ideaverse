@@ -2,6 +2,27 @@
 import { ref, computed, onMounted } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'
 import MarkdownViewer from '../common/MarkdownViewer.vue'
+import {
+  Lightbulb,
+  Trophy,
+  Sparkles,
+  ChevronDown,
+  ChevronRight,
+  Target,
+  Zap,
+  RefreshCw,
+  Clock,
+  Package,
+  AlertTriangle,
+  Shield,
+  Clipboard,
+  Edit3,
+  ArrowLeft,
+  Network,
+  Copy,
+  Download,
+  PartyPopper
+} from 'lucide-vue-next'
 
 const store = useThinkingStore()
 
@@ -19,11 +40,6 @@ onMounted(async () => {
     await store.generateSolutions()
   }
 })
-
-function getStarRating(score) {
-  const stars = Math.round(score / 2)
-  return '★'.repeat(stars) + '☆'.repeat(5 - stars)
-}
 
 function getScoreClass(score) {
   if (score >= 7) return 'high'
@@ -86,7 +102,10 @@ function goBack() {
 <template>
   <div class="step3">
     <div class="step-header">
-      <h2 class="step-title"><span>💡</span> 步骤三：方案评估</h2>
+      <h2 class="step-title">
+        <Lightbulb class="title-icon" :size="32" stroke-width="2.5" /> 
+        步骤三：方案评估
+      </h2>
       <p class="step-desc">头脑风暴生成方案，结构化评估找到最优解</p>
     </div>
     
@@ -99,7 +118,7 @@ function goBack() {
 
       <!-- 推荐方案横幅 -->
       <div v-else-if="recommendation" class="recommendation-banner">
-        <div class="rec-badge">🏆 推荐方案</div>
+        <div class="rec-badge"><Trophy :size="16" /> 推荐方案</div>
         <div class="rec-info">
           <h3 class="rec-name">{{ solutions.find(s => s.id === recommendation.bestSolution)?.name }}</h3>
           <p class="rec-reason">{{ recommendation.reason }}</p>
@@ -117,14 +136,17 @@ function goBack() {
             <div class="header-left">
               <span class="solution-index">方案 {{ index + 1 }}</span>
               <h3 class="solution-name">{{ solution.name }}</h3>
-              <span v-if="solution.id === recommendation?.bestSolution" class="best-tag">✨ 最佳</span>
+              <span v-if="solution.id === recommendation?.bestSolution" class="best-tag"><Sparkles :size="12" /> 最佳</span>
             </div>
             <div class="header-right">
               <div class="total-score" :class="getScoreClass(solution.weightedScore)">
                 <span class="score-value">{{ solution.weightedScore?.toFixed(1) }}</span>
                 <span class="score-label">综合评分</span>
               </div>
-              <span class="expand-icon">{{ expandedCardId === solution.id ? '▼' : '▶' }}</span>
+              <span class="expand-icon">
+                <ChevronDown v-if="expandedCardId === solution.id" :size="20" />
+                <ChevronRight v-else :size="20" />
+              </span>
             </div>
           </div>
           
@@ -137,7 +159,7 @@ function goBack() {
           <div class="metrics-section">
             <div class="metric-bar">
               <div class="metric-header">
-                <span class="metric-name">🎯 有效性</span>
+                <span class="metric-name"><Target :size="14" /> 有效性</span>
                 <span class="metric-score" :class="getScoreClass(solution.effectiveness)">{{ solution.effectiveness }}/10</span>
               </div>
               <div class="progress-bar">
@@ -146,7 +168,7 @@ function goBack() {
             </div>
             <div class="metric-bar">
               <div class="metric-header">
-                <span class="metric-name">⚡ 可行性</span>
+                <span class="metric-name"><Zap :size="14" /> 可行性</span>
                 <span class="metric-score" :class="getScoreClass(solution.feasibility)">{{ solution.feasibility }}/10</span>
               </div>
               <div class="progress-bar">
@@ -155,7 +177,7 @@ function goBack() {
             </div>
             <div class="metric-bar">
               <div class="metric-header">
-                <span class="metric-name">🔄 可持续性</span>
+                <span class="metric-name"><RefreshCw :size="14" /> 可持续性</span>
                 <span class="metric-score" :class="getScoreClass(solution.sustainability)">{{ solution.sustainability }}/10</span>
               </div>
               <div class="progress-bar">
@@ -169,7 +191,7 @@ function goBack() {
                class="expand-hint" 
                @click.stop="toggleExpand(solution.id)">
             <span>查看完整方案详情</span>
-            <span class="icon">▼</span>
+            <ChevronDown class="icon" :size="16" />
           </div>
           
           <!-- 编辑模式 -->
@@ -193,28 +215,28 @@ function goBack() {
             <div v-if="expandedCardId === solution.id" class="expanded-details">
               <div class="details-grid">
                 <div class="detail-card">
-                  <div class="detail-icon">⏱️</div>
+                  <Clock class="detail-icon" :size="24" />
                   <div class="detail-content">
                     <h4>实施周期</h4>
                     <p>{{ solution.timeframe }}</p>
                   </div>
                 </div>
                 <div class="detail-card">
-                  <div class="detail-icon">📦</div>
+                  <Package class="detail-icon" :size="24" />
                   <div class="detail-content">
                     <h4>所需资源</h4>
                     <p>{{ solution.resources }}</p>
                   </div>
                 </div>
                 <div class="detail-card warning">
-                  <div class="detail-icon">⚠️</div>
+                  <AlertTriangle class="detail-icon" :size="24" />
                   <div class="detail-content">
                     <h4>最坏情况</h4>
                     <p>{{ solution.worstCase }}</p>
                   </div>
                 </div>
                 <div class="detail-card success">
-                  <div class="detail-icon">🛡️</div>
+                  <Shield class="detail-icon" :size="24" />
                   <div class="detail-content">
                     <h4>应对策略</h4>
                     <p>{{ solution.countermeasure }}</p>
@@ -223,7 +245,7 @@ function goBack() {
               </div>
               
               <div v-if="solution.implementation" class="implementation-section">
-                <h4>📋 实施步骤</h4>
+                <h4><Clipboard :size="16" /> 实施步骤</h4>
                 <div class="implementation-content">
                   <MarkdownViewer :content="solution.implementation" />
                 </div>
@@ -234,11 +256,11 @@ function goBack() {
           <!-- 卡片操作按钮 -->
           <div class="card-actions">
             <button class="action-btn" @click.stop="startEditSolution(solution)">
-              <span>✏️</span>
+              <Edit3 :size="14" />
               <span>编辑方案</span>
             </button>
             <button class="action-btn" @click.stop="regenerate(solution.id)">
-              <span>🔄</span>
+              <RefreshCw :size="14" />
               <span>重新生成</span>
             </button>
           </div>
@@ -247,11 +269,11 @@ function goBack() {
       
       <div class="bottom-actions">
         <button class="btn btn-ghost btn-lg" @click="goBack">
-          <span>←</span>
+          <ArrowLeft :size="16" />
           <span>返回上一步</span>
         </button>
         <button class="btn btn-primary btn-lg" @click="generateMindMapAndShow">
-          <span>📊</span>
+          <Network :size="16" />
           <span>生成思维导图</span>
         </button>
       </div>
@@ -262,20 +284,26 @@ function goBack() {
       <div class="mindmap-card">
         <div class="mindmap-header">
           <div class="mindmap-title">
-            <span class="mindmap-icon">🗺️</span>
+            <Network class="mindmap-icon" :size="24" />
             <h3>深度思考思维导图</h3>
           </div>
           <div class="mindmap-actions">
-            <button class="btn btn-ghost" @click="showMindMap = false">← 返回</button>
-            <button class="btn btn-secondary" @click="copyMindMap">📋 复制</button>
-            <button class="btn btn-primary" @click="downloadMindMap">📥 下载</button>
+            <button class="btn btn-ghost" @click="showMindMap = false">
+              <ArrowLeft :size="14" /> 返回
+            </button>
+            <button class="btn btn-secondary" @click="copyMindMap">
+              <Copy :size="14" /> 复制
+            </button>
+            <button class="btn btn-primary" @click="downloadMindMap">
+              <Download :size="14" /> 下载
+            </button>
           </div>
         </div>
         <div class="mindmap-content">
           <MarkdownViewer :content="mindMapContent" />
         </div>
         <div class="mindmap-footer">
-          <div class="complete-badge">🎉</div>
+          <PartyPopper class="complete-badge-icon" :size="48" />
           <h3>恭喜！你已完成本次深度思考</h3>
           <p>思维导图已生成，可以复制或下载保存</p>
         </div>
