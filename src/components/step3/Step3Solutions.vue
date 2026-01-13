@@ -1,7 +1,12 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'
 import MarkdownViewer from '../common/MarkdownViewer.vue'
+import { Transformer } from 'markmap-lib'
+import { Markmap } from 'markmap-view'
+import { Toolbar } from 'markmap-toolbar'
+import { toPng } from 'html-to-image'
+import 'markmap-toolbar/dist/style.css'
 import {
   Lightbulb,
   Trophy,
@@ -21,7 +26,11 @@ import {
   Network,
   Copy,
   Download,
-  PartyPopper
+  PartyPopper,
+  Image as ImageIcon,
+  FileText,
+  X,
+  Maximize2
 } from 'lucide-vue-next'
 
 const store = useThinkingStore()
@@ -31,9 +40,106 @@ const mindMapContent = ref('')
 const editingSolutionId = ref(null)
 const editingContent = ref({})
 const expandedCardId = ref(null)
+const activeTab = ref('mindmap') // 'mindmap' | 'markdown'
+const svgRef = ref(null)
+const wrapperRef = ref(null)
+const fullscreenSvgRef = ref(null)
+const fullscreenWrapperRef = ref(null)
+const showFullscreen = ref(false)
+
+let markmapInstance = null
+let fullscreenMarkmapInstance = null
 
 const solutions = computed(() => store.currentSession?.solutions || [])
 const recommendation = computed(() => store.currentSession?.recommendation)
+
+watch(showMindMap, (val) => {
+  if (val && activeTab.value === 'mindmap') {
+    nextTick(() => {
+      initMarkmap()
+    })
+  }
+})
+
+watch(activeTab, (val) => {
+  if (val === 'mindmap' && showMindMap.value) {
+    nextTick(() => {
+      initMarkmap()
+    })
+  }
+})
+
+watch(showFullscreen, (val) => {
+  if (val) {
+    nextTick(() => {
+      initFullscreenMarkmap()
+    })
+  } else {
+    // Cleanup fullscreen instance when closing
+    if (fullscreenMarkmapInstance) {
+        fullscreenMarkmapInstance.destroy()
+        fullscreenMarkmapInstance = null
+    }
+  }
+})
+
+function initMarkmap() {
+  if (!svgRef.value || !mindMapContent.value) return
+  
+  if (markmapInstance) {
+    svgRef.value.innerHTML = ''
+    markmapInstance = null
+  }
+  
+  const transformer = new Transformer()
+  const { root } = transformer.transform(mindMapContent.value)
+  
+  markmapInstance = Markmap.create(svgRef.value, {
+    autoFit: true,
+    zoom: true,
+    pan: true,
+  }, root)
+
+  // Toolbar
+  if (wrapperRef.value && !wrapperRef.value.querySelector('.mm-toolbar')) {
+    const toolbar = Toolbar.create(markmapInstance)
+    toolbar.setBrand(false)
+    toolbar.el.style.position = 'absolute'
+    toolbar.el.style.bottom = '1rem'
+    toolbar.el.style.right = '1rem'
+    toolbar.el.style.zIndex = '10' // Ensure it's clickable
+    wrapperRef.value.appendChild(toolbar.el)
+  }
+}
+
+function initFullscreenMarkmap() {
+  if (!fullscreenSvgRef.value || !mindMapContent.value) return
+  
+  if (fullscreenMarkmapInstance) {
+    fullscreenSvgRef.value.innerHTML = ''
+    fullscreenMarkmapInstance = null
+  }
+  
+  const transformer = new Transformer()
+  const { root } = transformer.transform(mindMapContent.value)
+  
+  fullscreenMarkmapInstance = Markmap.create(fullscreenSvgRef.value, {
+    autoFit: true,
+    zoom: true,
+    pan: true,
+  }, root)
+
+  // Toolbar for Fullscreen
+  if (fullscreenWrapperRef.value && !fullscreenWrapperRef.value.querySelector('.mm-toolbar')) {
+    const toolbar = Toolbar.create(fullscreenMarkmapInstance)
+    toolbar.setBrand(false)
+    toolbar.el.style.position = 'absolute'
+    toolbar.el.style.bottom = '2rem'
+    toolbar.el.style.right = '2rem'
+    toolbar.el.style.zIndex = '1010' // Ensure it's above modal overlay
+    fullscreenWrapperRef.value.appendChild(toolbar.el)
+  }
+}
 
 onMounted(async () => {
   if (solutions.value.length === 0) {
@@ -92,6 +198,41 @@ function downloadMindMap() {
   a.download = '深度思考-思维导图.md'
   a.click()
   URL.revokeObjectURL(url)
+}
+
+async function downloadImage() {
+  if (!svgRef.value) return
+  
+  try {
+    // 获取SVG元素
+    const svgElement = svgRef.value
+    // 获取实际尺寸
+    const { width, height } = svgElement.getBoundingClientRect()
+    
+    // 使用 html-to-image 转换为 PNG
+    // 增加 scale 提高清晰度
+    // 设置背景色为白色，防止透明背景
+    // 跳过字体嵌入，避免跨域 CSS 问题
+    const dataUrl = await toPng(svgElement, {
+      backgroundColor: 'white',
+      width: width,
+      height: height,
+      style: {
+        transform: 'scale(1)', // 确保不被缩放影响
+        transformOrigin: 'top left'
+      },
+      pixelRatio: 2, // 2倍图，更清晰
+      skipFonts: true, // 跳过字体嵌入，避免跨域问题
+    })
+    
+    const a = document.createElement('a')
+    a.href = dataUrl
+    a.download = '深度思考-思维导图.png'
+    a.click()
+  } catch (err) {
+    console.error('导出图片失败:', err)
+    alert('导出图片失败，请重试')
+  }
 }
 
 function goBack() {
@@ -291,16 +432,48 @@ function goBack() {
             <button class="btn btn-ghost" @click="showMindMap = false">
               <ArrowLeft :size="14" /> 返回
             </button>
-            <button class="btn btn-secondary" @click="copyMindMap">
-              <Copy :size="14" /> 复制
+            <button class="btn btn-secondary" @click="downloadImage" v-if="activeTab === 'mindmap'">
+              <ImageIcon :size="14" /> 导出图片
             </button>
-            <button class="btn btn-primary" @click="downloadMindMap">
-              <Download :size="14" /> 下载
+            <button class="btn btn-secondary" @click="downloadMindMap">
+              <Download :size="14" /> 导出MD
+            </button>
+            <button class="btn btn-secondary" @click="copyMindMap">
+              <Copy :size="14" /> 复制文本
             </button>
           </div>
         </div>
-        <div class="mindmap-content">
-          <MarkdownViewer :content="mindMapContent" />
+        
+        <div class="mindmap-tabs">
+            <div 
+              class="tab-item" 
+              :class="{ active: activeTab === 'mindmap' }"
+              @click="activeTab = 'mindmap'"
+            >
+              <Network :size="16" />
+              思维导图
+            </div>
+            <div 
+              class="tab-item" 
+              :class="{ active: activeTab === 'markdown' }"
+              @click="activeTab = 'markdown'"
+            >
+              <FileText :size="16" />
+              Markdown
+            </div>
+        </div>
+
+        <div class="mindmap-content" ref="wrapperRef">
+          <div v-show="activeTab === 'mindmap'" class="mindmap-view" @click="showFullscreen = true">
+             <div class="mindmap-overlay-hint">
+               <Maximize2 :size="24" />
+               <span>点击全屏查看</span>
+             </div>
+             <svg ref="svgRef" class="markmap-svg"></svg>
+          </div>
+          <div v-show="activeTab === 'markdown'" class="markdown-view">
+             <MarkdownViewer :content="mindMapContent" />
+          </div>
         </div>
         <div class="mindmap-footer">
           <PartyPopper class="complete-badge-icon" :size="48" />
@@ -309,10 +482,128 @@ function goBack() {
         </div>
       </div>
     </div>
+    
+    <!-- 全屏思维导图 Modal -->
+    <Transition name="fade">
+      <div v-if="showFullscreen" class="fullscreen-modal" @click.self="showFullscreen = false">
+        <div class="fullscreen-content" ref="fullscreenWrapperRef">
+          <button class="close-btn" @click="showFullscreen = false">
+            <X :size="24" />
+          </button>
+          <svg ref="fullscreenSvgRef" class="fullscreen-svg"></svg>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <style scoped>
+/* Fullscreen Modal */
+.fullscreen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+}
+
+.fullscreen-content {
+  width: 95vw;
+  height: 90vh;
+  background: white;
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(0,0,0,0.5);
+}
+
+.fullscreen-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1020;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-secondary);
+}
+
+.close-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  transform: rotate(90deg);
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.mindmap-view {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  cursor: pointer; /* Indicate clickable */
+}
+
+/* Overlay Hint */
+.mindmap-overlay-hint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-sm);
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 5;
+  pointer-events: none; /* Let clicks pass through to container */
+}
+
+.mindmap-view:hover .mindmap-overlay-hint {
+  opacity: 1;
+  background: rgba(0,0,0,0.05);
+}
+
+.mindmap-overlay-hint span {
+  background: rgba(255,255,255,0.9);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+}
+
 .step3 { max-width: 900px; margin: 0 auto; }
 
 .step-header { text-align: center; margin-bottom: var(--space-2xl); }
@@ -499,7 +790,68 @@ function goBack() {
 .mindmap-icon { font-size: var(--text-2xl); filter: grayscale(1); }
 .mindmap-title h3 { font-size: var(--text-xl); margin: 0; color: var(--color-text-primary); }
 .mindmap-actions { display: flex; gap: var(--space-md); }
-.mindmap-content { padding: var(--space-2xl); min-height: 400px; max-height: 600px; overflow-y: auto; background: var(--color-bg-card); }
+.mindmap-content { 
+  min-height: 400px; 
+  height: 600px;
+  background: var(--color-bg-card); 
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.mindmap-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-tertiary);
+  padding: 0 var(--space-xl);
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  margin-bottom: -1px;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+}
+
+.tab-item:hover {
+  color: var(--color-text-primary);
+  background: rgba(0,0,0,0.02);
+}
+
+.tab-item.active {
+  color: var(--color-accent-primary);
+  border-bottom-color: var(--color-bg-card);
+  border-top: 2px solid var(--color-accent-primary); /* Visual trick */
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  margin-top: -1px; /* Align top border */
+}
+
+.mindmap-view {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.markmap-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.markdown-view {
+  padding: var(--space-2xl);
+  overflow-y: auto;
+  height: 100%;
+}
 .mindmap-footer { padding: var(--space-2xl); border-top: 1px solid var(--color-border); text-align: center; background: var(--color-bg-tertiary); }
 .complete-badge { font-size: 48px; margin-bottom: var(--space-md); filter: grayscale(1); }
 .mindmap-footer h3 { font-size: var(--text-xl); color: var(--color-text-primary); margin: 0 0 var(--space-sm); }

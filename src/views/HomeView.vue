@@ -75,10 +75,6 @@ function goToHistory() {
       <div class="container">
         <!-- Hero 区域 -->
         <section class="hero">
-          <div class="hero-badge">
-            <Brain :size="16" />
-            <span>AI 驱动的深度思考助手</span>
-          </div>
           <h1 class="hero-title">
             在思维的旷野，为你画出路径
           </h1>

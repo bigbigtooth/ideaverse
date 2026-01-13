@@ -84,9 +84,9 @@
 
 .hero-title {
   font-family: 'Ma Shan Zheng', cursive;
-  font-size: 5.5rem;
   font-weight: 400;
   line-height: 1.2;
+  font-size: 5rem;
   margin-bottom: var(--space-lg);
   color: var(--color-text-primary);
   letter-spacing: 0.05em;
@@ -369,7 +369,10 @@
 /* Responsive */
 @media (max-width: 768px) {
   .hero-title {
-    font-size: 2.5rem;
+    font-family: 'Ma Shan Zheng', cursive;
+    font-weight: 400;
+    line-height: 1.2;
+    font-size: 2rem;
   }
 
   .features-grid {
@@ -414,6 +417,9 @@
   }
 
   .hero-title {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-weight: 400;
+    line-height: 1.2;
     font-size: 2rem;
     padding: 0 var(--space-md);
   }
@@ -448,7 +454,10 @@
 
 @media (max-width: 480px) {
   .hero-title {
-    font-size: 1.8rem;
+    font-family: 'Ma Shan Zheng', cursive;
+    font-weight: 400;
+    line-height: 1.2;
+    font-size: 1.5rem;
   }
 
   .features-title {
