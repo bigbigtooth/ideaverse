@@ -425,13 +425,12 @@ function goBack() {
       <div class="mindmap-card">
         <div class="mindmap-header">
           <div class="mindmap-title">
-            <Network class="mindmap-icon" :size="24" />
+            <button class="btn-icon-back" @click="showMindMap = false">
+              <ArrowLeft :size="20" />
+            </button>
             <h3>深度思考思维导图</h3>
           </div>
           <div class="mindmap-actions">
-            <button class="btn btn-ghost" @click="showMindMap = false">
-              <ArrowLeft :size="14" /> 返回
-            </button>
             <button class="btn btn-secondary" @click="downloadImage" v-if="activeTab === 'mindmap'">
               <ImageIcon :size="14" /> 导出图片
             </button>
@@ -786,10 +785,32 @@ function goBack() {
 .mindmap-section { }
 .mindmap-card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-xl); overflow: hidden; }
 .mindmap-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-xl); background: var(--color-bg-tertiary); border-bottom: 1px solid var(--color-border); }
-.mindmap-title { display: flex; align-items: center; gap: var(--space-md); }
+.mindmap-title { display: flex; align-items: center; gap: var(--space-sm); }
 .mindmap-icon { font-size: var(--text-2xl); filter: grayscale(1); }
 .mindmap-title h3 { font-size: var(--text-xl); margin: 0; color: var(--color-text-primary); }
 .mindmap-actions { display: flex; gap: var(--space-md); }
+
+.btn-icon-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: white;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  margin-right: var(--space-xs);
+}
+
+.btn-icon-back:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border-color: var(--color-accent-primary);
+}
 .mindmap-content { 
   min-height: 400px; 
   height: 600px;
@@ -884,10 +905,11 @@ function goBack() {
   .bottom-actions { flex-direction: column; gap: var(--space-md); }
   .bottom-actions .btn { width: 100%; justify-content: center; }
   
-  .mindmap-header { flex-direction: column; align-items: stretch; gap: var(--space-md); }
-  .mindmap-title { justify-content: center; }
+  .mindmap-header { flex-direction: column; align-items: stretch; gap: var(--space-md); padding: var(--space-lg); }
+  .mindmap-title { justify-content: center; position: relative; }
+  .btn-icon-back { position: absolute; left: 0; margin-right: 0; }
   .mindmap-actions { width: 100%; display: flex; justify-content: space-between; gap: 8px; }
-  .mindmap-actions .btn { flex: 1; padding: 8px 0; justify-content: center; font-size: 13px; white-space: nowrap; min-width: 0; }
+  .mindmap-actions .btn { flex: 1; padding: 6px 4px; justify-content: center; font-size: 12px; white-space: nowrap; min-width: 0; gap: 4px; }
   
   .card-actions { flex-direction: column; }
   .action-btn { justify-content: center; }
