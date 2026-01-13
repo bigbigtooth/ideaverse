@@ -43,9 +43,9 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
-  function handleAiProgress(partialText) {
+  function handleAiProgress(currentLength) {
     aiStatus.value = 'receiving'
-    aiResponseCount.value = partialText.length
+    aiResponseCount.value = currentLength
   }
 
   function handleError(err) {
@@ -101,10 +101,20 @@ export const useThinkingStore = defineStore('thinking', () => {
       setLoading(true)
       setAiStatus('requesting', '正在生成采访问题...')
       
-      const questions = await ai.generateInterviewQuestions(
+      const result = await ai.generateInterviewQuestions(
         currentSession.value.problem,
         handleAiProgress
       )
+      
+      // 兼容处理：AI 可能返回 { questions: [...] } 或直接返回 [...]
+      let questions = []
+      if (result) {
+        if (Array.isArray(result)) {
+          questions = result
+        } else if (Array.isArray(result.questions)) {
+          questions = result.questions
+        }
+      }
       
       updateCurrentSession({ 
         interviewQuestions: questions,
@@ -119,6 +129,24 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  function saveAnswer(questionId, question, answer) {
+    if (!currentSession.value) return
+
+    const answers = [...(currentSession.value.interviewAnswers || [])]
+    const existingIndex = answers.findIndex(a => a.questionId === questionId)
+
+    if (existingIndex !== -1) {
+      answers[existingIndex] = { questionId, question, answer }
+    } else {
+      answers.push({ questionId, question, answer })
+    }
+
+    updateCurrentSession({ 
+      interviewAnswers: answers,
+      updatedAt: new Date().toISOString()
+    })
+  }
+
   async function generateUnderstandingReport() {
     if (!currentSession.value) return
 
@@ -128,7 +156,6 @@ export const useThinkingStore = defineStore('thinking', () => {
 
       const report = await ai.generateUnderstandingReport(
         currentSession.value.problem,
-        currentSession.value.interviewQuestions,
         currentSession.value.interviewAnswers,
         handleAiProgress
       )
@@ -148,7 +175,7 @@ export const useThinkingStore = defineStore('thinking', () => {
   }
 
   // Step 2: Analysis
-  async function recommendThinkingModels() {
+  async function recommendModels() {
     if (!currentSession.value) return
 
     try {
@@ -161,8 +188,12 @@ export const useThinkingStore = defineStore('thinking', () => {
         handleAiProgress
       )
       
-      // 这里可能不需要存储推荐结果，直接返回给组件使用
-      // 或者存入 session (如果是为了持久化推荐历史)
+      updateCurrentSession({
+        recommendedModels: result.recommendedModels || [],
+        modelReasons: result.reasons || {},
+        updatedAt: new Date().toISOString()
+      })
+      
       return result
     } catch (err) {
       handleError(err)
@@ -194,9 +225,12 @@ export const useThinkingStore = defineStore('thinking', () => {
         content: null
       }))
 
+      // 确保使用传入的 modelId，防止 AI 返回错误的 ID
+      const model = ai.THINKING_MODELS[modelId]
+
       updateCurrentSession({
-        thinkingModel: result.thinkingModel,
-        thinkingModelId: result.thinkingModelId,
+        thinkingModel: model ? model.name : result.thinkingModel,
+        thinkingModelId: modelId,
         analysisCards: cards,
         updatedAt: new Date().toISOString()
       })
@@ -224,9 +258,12 @@ export const useThinkingStore = defineStore('thinking', () => {
       setLoading(true)
       setAiStatus('requesting', `正在分析维度：${cards[cardIndex].dimension}...`)
 
+      console.log('[Thinking Store] Calling analyzeDimension with modelId:', currentSession.value.thinkingModelId)
+
       const result = await ai.analyzeDimension(
         currentSession.value.problem,
-        currentSession.value.thinkingModel,
+        currentSession.value.understandingReport,
+        currentSession.value.thinkingModelId,
         cards[cardIndex],
         handleAiProgress
       )
@@ -263,14 +300,14 @@ export const useThinkingStore = defineStore('thinking', () => {
 
       const report = await ai.generateDeepAnalysisReport(
         currentSession.value.problem,
-        currentSession.value.thinkingModel,
+        currentSession.value.understandingReport,
+        currentSession.value.thinkingModelId,
         currentSession.value.analysisCards,
         handleAiProgress
       )
 
       updateCurrentSession({
         deepAnalysisReport: report,
-        currentStep: 3, // 自动进入下一步
         updatedAt: new Date().toISOString()
       })
 
@@ -280,6 +317,66 @@ export const useThinkingStore = defineStore('thinking', () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function reanalyzeCard(cardId, feedback) {
+    if (!currentSession.value) return
+
+    const cards = [...currentSession.value.analysisCards]
+    const cardIndex = cards.findIndex(c => c.id === cardId)
+    if (cardIndex === -1) return
+
+    try {
+      cards[cardIndex].status = 'analyzing'
+      updateCurrentSession({ analysisCards: cards })
+
+      setLoading(true)
+      setAiStatus('requesting', `正在重新分析维度：${cards[cardIndex].dimension}...`)
+
+      const result = await ai.reanalyzeCard(
+        currentSession.value.problem,
+        cards[cardIndex],
+        feedback,
+        handleAiProgress
+      )
+
+      cards[cardIndex] = {
+        ...cards[cardIndex],
+        ...result,
+        status: 'completed'
+      }
+
+      updateCurrentSession({
+        analysisCards: cards,
+        updatedAt: new Date().toISOString()
+      })
+
+      setAiStatus('completed')
+    } catch (err) {
+      handleError(err)
+      cards[cardIndex].status = 'completed' // Restore status on error
+      updateCurrentSession({ analysisCards: cards })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function updateAnalysisCard(cardId, content) {
+    if (!currentSession.value) return
+    
+    const cards = [...currentSession.value.analysisCards]
+    const index = cards.findIndex(c => c.id === cardId)
+    if (index !== -1) {
+      cards[index] = { ...cards[index], ...content }
+      updateCurrentSession({ analysisCards: cards })
+    }
+  }
+
+  function deleteAnalysisCard(cardId) {
+    if (!currentSession.value) return
+
+    const cards = currentSession.value.analysisCards.filter(c => c.id !== cardId)
+    updateCurrentSession({ analysisCards: cards })
   }
 
   // Step 3: Solutions
@@ -414,11 +511,15 @@ export const useThinkingStore = defineStore('thinking', () => {
     updateCurrentSession,
     resetSession,
     generateQuestions,
+    saveAnswer,
     generateUnderstandingReport,
-    recommendThinkingModels,
+    recommendModels,
     generateAnalysisDimensions,
     analyzeDimension,
     generateDeepAnalysisReport,
+    reanalyzeCard,
+    updateAnalysisCard,
+    deleteAnalysisCard,
     generateSolutions,
     updateSolution,
     regenerateSolution,

@@ -5,7 +5,9 @@ import MarkdownViewer from '../common/MarkdownViewer.vue'
 import { Transformer } from 'markmap-lib'
 import { Markmap } from 'markmap-view'
 import { Toolbar } from 'markmap-toolbar'
-import { toPng } from 'html-to-image'
+import * as d3 from 'd3'
+import { toPng, toSvg } from 'html-to-image'
+import logoSrc from '../../assets/logo.png'
 import 'markmap-toolbar/dist/style.css'
 import {
   Lightbulb,
@@ -83,6 +85,98 @@ watch(showFullscreen, (val) => {
   }
 })
 
+const colorFn = d3.scaleOrdinal([
+  '#6366f1', // Indigo
+  '#10b981', // Emerald
+  '#f59e0b', // Amber
+  '#ec4899', // Pink
+  '#8b5cf6', // Violet
+  '#3b82f6', // Blue
+  '#ef4444', // Red
+  '#14b8a6', // Teal
+])
+
+// 辅助函数：将 Hex 颜色转换为 RGBA
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+function normalizeInlineStyle(styleText) {
+  return styleText
+    .replace(/\r?\n/g, ' ')
+    .replace(/"/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function processMarkmapData(node, depth = 0, index = 0, parentColor = null) {
+  let currentColor = parentColor
+  
+  if (depth === 0) {
+    // 根节点样式 - 内联化
+    // 渐变背景：Indigo (4f46e5) -> Violet (7c3aed)
+    const style = `
+      display: inline-block;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 24px;
+      line-height: 1.4;
+      box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4), 0 8px 10px -6px rgba(79, 70, 229, 0.2);
+      border: 2px solid rgba(255,255,255,0.2);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    `
+    node.content = `<div style="${normalizeInlineStyle(style)}">${node.content}</div>`
+  } else if (depth === 1) {
+    // 二级节点样式 - 分配颜色
+    const colorList = colorFn.range()
+    currentColor = colorList[index % colorList.length]
+    
+    // 存储颜色到 payload 供 Markmap 线条使用
+    node.payload = { ...node.payload, color: currentColor }
+    
+    // 生成动态样式
+    const bgColor = hexToRgba(currentColor, 0.05) // 极淡的背景
+    const borderColor = currentColor
+    const shadowColor = hexToRgba(currentColor, 0.15)
+    const textColor = currentColor
+    
+    // 内联样式确保导出时保留
+    const style = `
+      display: inline-block;
+      background-color: ${bgColor};
+      border: 2px solid ${borderColor};
+      color: ${textColor};
+      box-shadow: 0 4px 12px ${shadowColor};
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 18px;
+      line-height: 1.4;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    `
+    
+    node.content = `<div style="${normalizeInlineStyle(style)}">${node.content}</div>`
+  } else {
+    // 其他节点 - 继承颜色用于线条
+    if (currentColor) {
+      node.payload = { ...node.payload, color: currentColor }
+    }
+  }
+  
+  if (node.children && node.children.length > 0) {
+    node.children.forEach((child, idx) => processMarkmapData(child, depth + 1, idx, currentColor))
+  }
+  return node
+}
+
 function initMarkmap() {
   if (!svgRef.value || !mindMapContent.value) return
   
@@ -94,10 +188,21 @@ function initMarkmap() {
   const transformer = new Transformer()
   const { root } = transformer.transform(mindMapContent.value)
   
+  // 应用自定义节点样式
+  processMarkmapData(root)
+  
   markmapInstance = Markmap.create(svgRef.value, {
     autoFit: true,
     zoom: true,
     pan: true,
+    scrollForPan: true, // 明确启用滚轮平移，可能解决部分事件警告
+    color: (node) => node.payload?.color || colorFn(node.content),
+    spacingHorizontal: 100,
+    spacingVertical: 20,
+    paddingX: 30,
+    maxWidth: 400,
+    duration: 500,
+    html: true, // 确保开启 HTML 支持
   }, root)
 
   // Toolbar
@@ -123,10 +228,20 @@ function initFullscreenMarkmap() {
   const transformer = new Transformer()
   const { root } = transformer.transform(mindMapContent.value)
   
+  // 应用自定义节点样式
+  processMarkmapData(root)
+  
   fullscreenMarkmapInstance = Markmap.create(fullscreenSvgRef.value, {
     autoFit: true,
     zoom: true,
     pan: true,
+    color: (node) => node.payload?.color || colorFn(node.content),
+    spacingHorizontal: 120, // 全屏模式更宽一点
+    spacingVertical: 25,
+    paddingX: 40,
+    maxWidth: 600,
+    duration: 500,
+    html: true, // 确保开启 HTML 支持
   }, root)
 
   // Toolbar for Fullscreen
@@ -200,38 +315,223 @@ function downloadMindMap() {
   URL.revokeObjectURL(url)
 }
 
+async function processWatermark(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        
+        // 绘制原图
+        ctx.fillStyle = 'white'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.drawImage(img, 0, 0)
+        
+        // 加载 Logo
+        const logo = new Image()
+        logo.onload = () => {
+          // 设置水印全局透明度
+          ctx.globalAlpha = 0.5
+          
+          // 配置水印参数
+          const text = '深度思界'
+          const fontSize = Math.max(24, Math.floor(img.width / 40))
+          ctx.font = `500 ${fontSize}px "KaiTi", "STKaiti", "楷体", serif`
+          ctx.fillStyle = '#000000'
+          ctx.textAlign = 'right'
+          ctx.textBaseline = 'bottom'
+          
+          const padding = Math.floor(fontSize)
+          const textX = canvas.width - padding
+          const textY = canvas.height - padding
+          
+          // 绘制文字
+          ctx.fillText(text, textX, textY)
+          
+          // 绘制 Logo (在文字左侧)
+          const logoHeight = fontSize * 1.2
+          const logoWidth = logoHeight * (logo.width / logo.height)
+          const logoMargin = fontSize * 0.4
+          const logoX = textX - ctx.measureText(text).width - logoWidth - logoMargin
+          const logoY = textY - logoHeight + (fontSize * 0.15) // 微调垂直对齐
+          
+          ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight)
+          
+          // 触发下载
+          const link = document.createElement('a')
+          link.download = `深度思考-思维导图-${new Date().getTime()}.png`
+          link.href = canvas.toDataURL('image/png')
+          link.click()
+          
+          resolve()
+        }
+        
+        logo.onerror = () => {
+          // Logo 加载失败则仅绘制文字
+          console.warn('Watermark logo failed to load')
+          // 设置水印全局透明度
+          ctx.globalAlpha = 0.5
+          
+          const text = '深度思界'
+          const fontSize = Math.max(24, Math.floor(img.width / 40))
+          ctx.font = `500 ${fontSize}px "KaiTi", "STKaiti", "楷体", serif`
+          ctx.fillStyle = '#000000'
+          ctx.textAlign = 'right'
+          ctx.textBaseline = 'bottom'
+          
+          const padding = Math.floor(fontSize)
+          ctx.fillText(text, canvas.width - padding, canvas.height - padding)
+          
+          const link = document.createElement('a')
+          link.download = `深度思考-思维导图-${new Date().getTime()}.png`
+          link.href = canvas.toDataURL('image/png')
+          link.click()
+          resolve()
+        }
+        
+        logo.src = logoSrc
+        
+      } catch (e) {
+        reject(e)
+      }
+    }
+    img.onerror = (e) => reject(new Error('Image load failed'))
+    img.src = dataUrl
+  })
+}
+
 async function downloadImage() {
-  if (!svgRef.value) return
+  if (!svgRef.value || !markmapInstance) return
+  
+  // 1. 锁定交互并静默
+  markmapInstance.setOptions({ duration: 0, zoom: false, pan: false })
+
+  // 2. 保存现场 (Styles)
+  const svgElement = svgRef.value
+  const originalStyle = {
+    width: svgElement.style.width,
+    height: svgElement.style.height,
+    position: svgElement.style.position,
+    left: svgElement.style.left,
+    top: svgElement.style.top,
+    zIndex: svgElement.style.zIndex,
+    backgroundColor: svgElement.style.backgroundColor,
+  }
+
+  // 3. 准备导出数据 (Resize)
+  let width = 0
+  let height = 0
   
   try {
-    // 获取SVG元素
-    const svgElement = svgRef.value
-    // 获取实际尺寸
-    const { width, height } = svgElement.getBoundingClientRect()
+    // 获取真实内容尺寸
+    // 此时我们不需要手动去掉 transform，因为我们将使用 markmapInstance.fit() 来自动适配
+    const contentGroup = svgElement.querySelector('g')
+    const bbox = contentGroup ? contentGroup.getBBox() : svgElement.getBoundingClientRect()
+    // 增加更多内边距以容纳阴影
+    const padding = 100
     
-    // 使用 html-to-image 转换为 PNG
-    // 增加 scale 提高清晰度
-    // 设置背景色为白色，防止透明背景
-    // 跳过字体嵌入，避免跨域 CSS 问题
-    const dataUrl = await toPng(svgElement, {
-      backgroundColor: 'white',
-      width: width,
-      height: height,
-      style: {
-        transform: 'scale(1)', // 确保不被缩放影响
-        transformOrigin: 'top left'
-      },
-      pixelRatio: 2, // 2倍图，更清晰
-      skipFonts: true, // 跳过字体嵌入，避免跨域问题
+    width = Math.ceil(bbox.width) + padding * 2
+    height = Math.ceil(bbox.height) + padding * 2
+    
+    // 关键：将 SVG 容器放大到能容纳所有内容的尺寸，并全屏置顶
+    svgElement.style.width = `${width}px`
+    svgElement.style.height = `${height}px`
+    svgElement.style.backgroundColor = 'white'
+    svgElement.style.position = 'absolute'
+    svgElement.style.top = '0'
+    svgElement.style.left = '0'
+    svgElement.style.zIndex = '9999' // 确保在最上层
+    
+    // 4. 引擎适配 (Fit)
+    // 通知 Markmap 容器大小变了，请重新计算布局以填满容器
+    // 增加 padding 以防止自定义样式的阴影或负边距元素被裁剪
+    markmapInstance.setOptions({ 
+        paddingX: 100, 
+        paddingY: 100 
     })
+    await markmapInstance.fit()
     
-    const a = document.createElement('a')
-    a.href = dataUrl
-    a.download = '深度思考-思维导图.png'
-    a.click()
+    // 等待 D3 过渡完成（虽然 duration=0，但留点 buffer 更稳）
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // 内部函数：尝试以指定倍率生成 PNG
+    const tryGeneratePng = async (ratio) => {
+      console.log(`尝试导出图片: ratio=${ratio}, size=${width}x${height}`)
+      return await toPng(svgElement, {
+        backgroundColor: 'white',
+        width: width,
+        height: height,
+        pixelRatio: ratio,
+        skipFonts: true,
+        cacheBust: true,
+        filter: () => true, // 强制捕获所有节点
+      })
+    }
+    
+    // 5. 执行导出流程
+    let dataUrl = null
+    try {
+      dataUrl = await tryGeneratePng(4)
+    } catch (e) {
+      console.warn('4倍高清导出失败，尝试2倍...', e)
+      try {
+        dataUrl = await tryGeneratePng(2)
+      } catch (e2) {
+        console.warn('2倍高清导出失败，尝试1倍...', e2)
+        try {
+           dataUrl = await tryGeneratePng(1)
+        } catch (e3) {
+           console.error('图片导出完全失败', e3)
+           // 降级导出 SVG (直接导出当前状态)
+           const svgDataUrl = await toSvg(svgElement, {
+             backgroundColor: 'white',
+             width,
+             height,
+             cacheBust: true,
+           })
+           const a = document.createElement('a')
+           a.href = svgDataUrl
+           a.download = '深度思考-思维导图.svg'
+           a.click()
+           alert('图片导出失败，已为您导出 SVG 矢量图格式')
+           return
+        }
+      }
+    }
+    
+    if (dataUrl) {
+      await processWatermark(dataUrl)
+    }
+
   } catch (err) {
-    console.error('导出图片失败:', err)
-    alert('导出图片失败，请重试')
+    console.error('导出流程异常:', err)
+    alert('导出出错，请重试')
+  } finally {
+    // 6. 恢复现场 (Restore)
+    // 恢复样式
+    svgElement.style.width = originalStyle.width
+    svgElement.style.height = originalStyle.height
+    svgElement.style.position = originalStyle.position
+    svgElement.style.left = originalStyle.left
+    svgElement.style.top = originalStyle.top
+    svgElement.style.zIndex = originalStyle.zIndex
+    svgElement.style.backgroundColor = originalStyle.backgroundColor
+    
+    // 恢复交互
+    if (markmapInstance) {
+      markmapInstance.setOptions({ 
+        duration: 500, 
+        zoom: true, 
+        pan: true,
+        paddingX: 30, // 恢复默认值
+        paddingY: 0   // 恢复默认值(undefined)
+      })
+      // 重新适配回原容器大小
+      await markmapInstance.fit() 
+    }
   }
 }
 
@@ -892,6 +1192,23 @@ function goBack() {
 .expand-leave-active { transition: all 0.4s ease-in-out; overflow: hidden; max-height: 2000px; opacity: 1; }
 .expand-enter-from,
 .expand-leave-to { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0; }
+
+/* Markmap 样式增强 */
+:deep(.markmap-node-text) {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  font-size: 16px; /* 基础字体增大 */
+}
+
+:deep(.markmap-link) {
+  stroke-width: 3px;
+  opacity: 0.6;
+}
+
+:deep(.markmap-node-circle) {
+  r: 6;
+  stroke-width: 3px;
+}
 
 @media (max-width: 768px) {
   .recommendation-banner { flex-direction: column; align-items: flex-start; }

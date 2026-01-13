@@ -45,7 +45,8 @@ import {
   Move,
   Swords,
   Drama,
-  Calculator
+  Calculator,
+  HelpCircle
 } from 'lucide-vue-next'
 
 const iconMap = {
@@ -90,7 +91,8 @@ const iconMap = {
   Move,
   Swords,
   Drama,
-  Calculator
+  Calculator,
+  HelpCircle
 }
 
 const store = useThinkingStore()
@@ -123,6 +125,14 @@ onMounted(async () => {
   reportContent.value = deepAnalysisReport.value
   if (analysisCards.value.length > 0) {
     showModelSelector.value = false
+    
+    // 如果有未完成的分析，继续执行
+    const pendingCards = analysisCards.value.filter(c => c.status === 'pending')
+    if (pendingCards.length > 0) {
+      for (const card of pendingCards) {
+        await store.analyzeDimension(card.id)
+      }
+    }
   } else if (recommendedModels.value.length === 0) {
     await store.recommendModels()
   }
@@ -130,7 +140,16 @@ onMounted(async () => {
 
 async function selectModel(modelId) {
   showModelSelector.value = false
-  await store.analyzeWithModel(modelId)
+  await store.generateAnalysisDimensions(modelId)
+  
+  // 自动开始分析所有维度
+  const cards = store.currentSession?.analysisCards || []
+  for (const card of cards) {
+    if (card.status === 'pending') {
+      await store.analyzeDimension(card.id)
+    }
+  }
+
   reportContent.value = store.currentSession?.deepAnalysisReport || ''
 }
 
@@ -168,7 +187,7 @@ function deleteCard(cardId) {
 
 async function showAnalysisReport() {
   if (!deepAnalysisReport.value) {
-    await store.generateFullReport()
+    await store.generateDeepAnalysisReport()
   }
   reportContent.value = store.currentSession?.deepAnalysisReport || ''
   showReport.value = true
@@ -181,7 +200,7 @@ function saveReport() {
   editingReport.value = false
 }
 
-function confirmAndNext() { store.confirmAnalysisReport() }
+function confirmAndNext() { store.updateCurrentSession({ currentStep: 3 }) }
 function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
 </script>
 

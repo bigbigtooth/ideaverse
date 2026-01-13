@@ -541,7 +541,82 @@ function parseJsonResponse(content) {
   const lastResult = extractAndParse(aggressiveCleaned)
   if (lastResult) return lastResult
 
+  // 策略 5: 尝试修复截断的 JSON
+  try {
+    const repaired = tryFixTruncatedJson(content)
+    const repairedResult = extractAndParse(repaired)
+    if (repairedResult) {
+      console.log('成功修复截断的 JSON')
+      return repairedResult
+    }
+  } catch (e) {
+    console.warn('尝试修复 JSON 失败:', e)
+  }
+
   throw new Error('AI 返回内容格式错误，无法解析 JSON。请重试。')
+}
+
+/**
+ * 尝试修复截断的 JSON 字符串
+ * 简单的堆栈平衡算法
+ */
+function tryFixTruncatedJson(jsonStr) {
+  let stack = []
+  let inString = false
+  let escaped = false
+  
+  // 找到真正的 JSON 开始位置 (忽略 Markdown 标记)
+  let start = jsonStr.indexOf('{')
+  const startArr = jsonStr.indexOf('[')
+  if (start === -1 || (startArr !== -1 && startArr < start)) {
+    start = startArr
+  }
+  
+  if (start === -1) return jsonStr // 没找到开始，无法修复
+  
+  const content = jsonStr.substring(start)
+  
+  for (const char of content) {
+    if (escaped) {
+      escaped = false
+      continue
+    }
+    
+    if (char === '\\') {
+      escaped = true
+      continue
+    }
+    
+    if (char === '"') {
+      inString = !inString
+      continue
+    }
+    
+    if (!inString) {
+      if (char === '{') {
+        stack.push('}')
+      } else if (char === '[') {
+        stack.push(']')
+      } else if (char === '}' || char === ']') {
+        if (stack.length > 0 && stack[stack.length - 1] === char) {
+          stack.pop()
+        }
+      }
+    }
+  }
+  
+  // 修复未闭合的字符串
+  let fixed = content
+  if (inString) {
+    fixed += '"'
+  }
+  
+  // 修复未闭合的结构
+  while (stack.length > 0) {
+    fixed += stack.pop()
+  }
+  
+  return fixed
 }
 
 /**
@@ -818,7 +893,15 @@ export async function generateAnalysisDimensions(problem, understandingReport, m
  * 步骤二：使用指定思维模型进行分析 - 第二步：分析单个维度
  */
 export async function analyzeDimension(problem, understandingReport, modelId, dimension, onProgress) {
+  console.log('[AI Service] analyzeDimension called with modelId:', modelId)
   const model = THINKING_MODELS[modelId]
+  
+  if (!model) {
+    console.error('[AI Service] Invalid modelId:', modelId)
+    console.error('[AI Service] Available models:', Object.keys(THINKING_MODELS))
+    throw new Error(`未知的思维模型 ID: ${modelId}`)
+  }
+
   const messages = [
     {
       role: 'system',
