@@ -24,7 +24,7 @@ export default {
     brand_name: 'IdeaVerse'
   },
   home: {
-    slogan: 'Mapping Your Path in the Wilderness of Thought',
+    slogan: 'Deep thought, clear bounds',
     start_thinking: 'Start Deep Thinking',
     placeholder: 'e.g., How to improve team efficiency? or Should I change my job?',
     features: {
