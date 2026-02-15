@@ -32,7 +32,7 @@
 
 ## 在线演示
 
-访问 [GitHub Pages](https://bigtooth.github.io/ideaverse) 查看在线演示。
+访问 [深度思界](http://idea.dayazk.cn/) 查看在线演示。
 
 ## 快速开始
 

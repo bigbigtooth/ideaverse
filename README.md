@@ -32,7 +32,7 @@
 
 ## Demo
 
-Visit [GitHub Pages](https://bigtooth.github.io/ideaverse) for a live demo.
+Visit [IdeaVerse](http://idea.dayazk.cn/) for a live demo.
 
 ## Quick Start
 
