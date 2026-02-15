@@ -24,7 +24,7 @@ export default {
     brand_name: '深度思界'
   },
   home: {
-    slogan: '让思考有迹可循',
+    slogan: '思至深处，界自成',
     start_thinking: '开始深度思考',
     placeholder: '例如：如何提高团队的工作效率？或者：我应该换工作吗？',
     features: {
