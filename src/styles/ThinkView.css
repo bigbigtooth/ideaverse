@@ -1,0 +1,194 @@
+/* ========================================
+   ThinkView - 思考页面样式
+   优化字体层次，提升阅读体验
+   ======================================== */
+
+.think-view {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+}
+
+.back-btn {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.back-btn:hover {
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+}
+
+.logo-text {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-family: var(--font-kaiti);
+  letter-spacing: 0.1em;
+}
+
+.header-right {
+  width: 80px;
+}
+
+/* Problem Bar */
+.problem-bar {
+  background: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) 0;
+}
+
+.problem-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.problem-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  letter-spacing: 0.02em;
+}
+
+.problem-text {
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* Main */
+.main {
+  flex: 1;
+  padding: var(--space-xl) 0 var(--space-3xl);
+}
+
+/* Error Banner */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: #fff1f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-lg);
+  color: #be123c;
+  margin-bottom: var(--space-xl);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.error-icon {
+  font-size: var(--text-xl);
+  filter: grayscale(1);
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Global Loading States */
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl);
+  gap: var(--space-md);
+  color: var(--color-text-muted);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+  margin: var(--space-xl) 0;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .header-content {
+    padding: var(--space-md);
+  }
+  
+  .logo-text {
+    display: none;
+  }
+  
+  .problem-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+    padding: 0 var(--space-md);
+  }
+  
+  .problem-label {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+  
+  .main {
+    padding: var(--space-lg) 0;
+  }
+  
+  .loading-section {
+    padding: var(--space-xl);
+    margin: var(--space-lg);
+  }
+}
