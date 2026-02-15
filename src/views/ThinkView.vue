@@ -1,10 +1,12 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useThinkingStore } from '../stores/thinking'
 import logoImage from '../assets/logo.png'
 import '../styles/ThinkView.css'
 import { AlertCircle, X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import LanguageSwitcher from '../components/common/LanguageSwitcher.vue'
 
 // 子组件
 import StepProgress from '../components/common/StepProgress.vue'
@@ -13,6 +15,7 @@ import Step2Analysis from '../components/step2/Step2Analysis.vue'
 import Step3Solutions from '../components/step3/Step3Solutions.vue'
 import GlobalStatusTooltip from '../components/common/GlobalStatusTooltip.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const store = useThinkingStore()
@@ -23,24 +26,17 @@ onMounted(async () => {
   const sessionId = route.params.id
   
   if (sessionId) {
-    // 场景 A: URL 带有 Session ID (如 /think/abc-123)
-    // 尝试从本地存储加载指定会话
     const session = store.loadSession(sessionId)
     if (!session) {
-      // 如果会话不存在（可能是无效 ID 或数据已清除），返回首页
       router.push('/')
       return
     }
   } else {
-    // 场景 B: URL 无 Session ID (如 /think)
-    // 检查 Store 中是否已有活跃会话（通常是从首页刚创建跳转过来的）
     const session = store.loadCurrentSession()
     if (!session) {
-      // 如果没有任何活跃会话，返回首页
       router.push('/')
       return
     }
-    // 将 URL 规范化，补充 Session ID，方便分享或刷新
     router.replace(`/think/${session.id}`)
   }
   
@@ -64,14 +60,15 @@ function goHome() {
     <header class="header">
       <div class="container header-content">
         <button class="btn btn-ghost back-btn" @click="goHome">
-          ← 首页
+          ← {{ t('common.home') }}
         </button>
         <div class="logo">
-          <img :src="logoImage" alt="深度思界 Logo" class="logo-icon">
-          <span class="logo-text">深度思界</span>
+          <img :src="logoImage" alt="Logo" class="logo-icon">
+          <span class="logo-text">{{ t('common.brand_name') }}</span>
         </div>
         <div class="header-right">
-          <!-- 可以添加保存按钮等 -->
+          <LanguageSwitcher />
+          <span class="auto-save-hint">{{ t('think.auto_save') }}</span>
         </div>
       </div>
     </header>
@@ -80,7 +77,7 @@ function goHome() {
     <div class="problem-bar">
       <div class="container">
         <div class="problem-content">
-          <span class="problem-label">深思问题：</span>
+          <span class="problem-label">{{ t('think.problem_label') }}</span>
           <span class="problem-text">{{ store.problem }}</span>
         </div>
       </div>

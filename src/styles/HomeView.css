@@ -303,6 +303,8 @@
 .feature-icon {
   display: flex;
   justify-content: center;
+  align-items: center;
+  width: 100%;
   margin-bottom: var(--space-md);
   color: var(--color-text-primary);
   opacity: 0.8;

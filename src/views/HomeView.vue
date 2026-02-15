@@ -3,10 +3,10 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThinkingStore } from '../stores/thinking'
 import { hasApiKey } from '../services/ai'
+import { useI18n } from 'vue-i18n'
 import { 
   History, 
   Settings, 
-  Brain, 
   AlertTriangle, 
   Sparkles, 
   Rocket, 
@@ -16,7 +16,9 @@ import {
 } from 'lucide-vue-next'
 import logoImage from '../assets/logo.png'
 import '../styles/HomeView.css'
+import LanguageSwitcher from '../components/common/LanguageSwitcher.vue'
 
+const { t } = useI18n()
 const router = useRouter()
 const store = useThinkingStore()
 
@@ -54,17 +56,18 @@ function goToHistory() {
     <header class="header">
       <div class="container header-content">
         <div class="logo">
-          <img :src="logoImage" alt="深度思界 Logo" class="logo-icon">
-          <span class="logo-text">深度思界</span>
+          <img :src="logoImage" alt="Logo" class="logo-icon">
+          <span class="logo-text">{{ t('common.brand_name') }}</span>
         </div>
         <nav class="nav">
+          <LanguageSwitcher />
           <button class="btn btn-ghost" @click="goToHistory">
             <History class="nav-icon" :size="20" />
-            <span class="nav-text">历史记录</span>
+            <span class="nav-text">{{ t('common.history') }}</span>
           </button>
           <button class="btn btn-ghost" @click="goToSettings">
             <Settings class="nav-icon" :size="20" />
-            <span class="nav-text">设置</span>
+            <span class="nav-text">{{ t('common.settings') }}</span>
           </button>
         </nav>
       </div>
@@ -76,18 +79,18 @@ function goToHistory() {
         <!-- Hero 区域 -->
         <section class="hero">
           <h1 class="hero-title">
-            在思维的旷野，为你画出路径
+            {{ t('home.slogan') }}
           </h1>
           <p class="hero-description">
-            运用科学的思维模型，全方位的思考角度，帮助你从问题中发现本质，从迷雾中找到方向
+            {{ t('home.start_thinking') }}
           </p>
           
           <!-- API Key 警告 -->
           <div v-if="showApiKeyWarning" class="api-warning">
             <AlertTriangle class="warning-icon" :size="16" />
-            <span>请先配置 DeepSeek API Key 以启用 AI 功能</span>
+            <span>{{ t('settings.api_key_missing') }}</span>
             <button class="btn btn-sm btn-primary" @click="goToSettings">
-              去配置
+              {{ t('common.settings') }}
             </button>
           </div>
         </section>
@@ -97,23 +100,23 @@ function goToHistory() {
           <div class="input-card">
             <div class="input-header">
               <Sparkles class="input-icon" :size="20" />
-              <span>请输入你需要深度思考的问题</span>
+              <span>{{ t('home.start_thinking') }}</span>
             </div>
             <textarea 
               v-model="problemInput"
               class="problem-input"
-              placeholder="例如：如何提高团队的工作效率？为什么用户流失率突然上升？我应该如何做出职业选择？"
+              :placeholder="t('home.placeholder')"
               rows="4"
             ></textarea>
             <div class="input-footer">
-              <div class="char-count">{{ problemInput.length }} 字</div>
+              <div class="char-count">{{ problemInput.length }}</div>
               <button 
                 class="btn btn-primary btn-lg start-btn"
                 :disabled="!problemInput.trim()"
                 @click="startThinking"
               >
                 <Rocket class="btn-icon" :size="20" />
-                <span>开始深度思考</span>
+                <span>{{ t('home.start_thinking') }}</span>
               </button>
             </div>
           </div>
@@ -121,45 +124,44 @@ function goToHistory() {
         
         <!-- 功能介绍 -->
         <section class="features">
-          <h2 class="features-title">三步助你深度思考</h2>
+          <h2 class="features-title">{{ t('common.brand_name') }}</h2>
           <div class="features-grid">
             <div class="feature-card">
               <div class="feature-number">01</div>
               <Target class="feature-icon" :size="48" stroke-width="1.5" />
-              <h3 class="feature-title">问题理解</h3>
+              <h3 class="feature-title">{{ t('home.features.step1_title') }}</h3>
               <p class="feature-desc">
-                通过智能采访问答，多角度理解问题本质，生成问题理解分析报告
+                {{ t('home.features.step1_desc') }}
               </p>
             </div>
             <div class="feature-card">
               <div class="feature-number">02</div>
               <Search class="feature-icon" :size="48" stroke-width="1.5" />
-              <h3 class="feature-title">深度分析</h3>
+              <h3 class="feature-title">{{ t('home.features.step2_title') }}</h3>
               <p class="feature-desc">
-                运用 5W2H、MECE 等思维模型，拆解问题，识别隐藏因素
+                {{ t('home.features.step2_desc') }}
               </p>
             </div>
             <div class="feature-card">
               <div class="feature-number">03</div>
               <Lightbulb class="feature-icon" :size="48" stroke-width="1.5" />
-              <h3 class="feature-title">方案评估</h3>
+              <h3 class="feature-title">{{ t('home.features.step3_title') }}</h3>
               <p class="feature-desc">
-                头脑风暴生成方案，结构化评估有效性、可行性与可持续性
+                {{ t('home.features.step3_desc') }}
               </p>
             </div>
           </div>
         </section>
         
-        <!-- 思维模型展示 -->
+        <!-- 思维模型展示 (Optional: could also be translated if needed, but these are mostly proper nouns or handled by generic list) -->
         <section class="models">
-          <h2 class="models-title">科学思维模型加持</h2>
+          <h2 class="models-title">{{ t('step2.recommend_title') }}</h2>
           <div class="models-list">
-            <div class="model-tag">5W2H 分析法</div>
-            <div class="model-tag">MECE 分解法</div>
-            <div class="model-tag">根因分析法</div>
-            <div class="model-tag">成本收益分析</div>
-            <div class="model-tag">压力测试</div>
-            <div class="model-tag">多角度验证</div>
+            <div class="model-tag">{{ t('thinking_models.MECE.name') }}</div>
+            <div class="model-tag">{{ t('thinking_models.5W2H.name') }}</div>
+            <div class="model-tag">{{ t('thinking_models.RootCause.name') }}</div>
+            <div class="model-tag">{{ t('thinking_models.SWOT.name') }}</div>
+            <div class="model-tag">{{ t('thinking_models.SixThinkingHats.name') }}</div>
           </div>
         </section>
       </div>
@@ -168,10 +170,7 @@ function goToHistory() {
     <!-- 底部 -->
     <footer class="footer">
       <div class="container">
-        <p>深度思界 IdeaVerse © 2026 · 让思考更有深度</p>
-        <p class="beian">
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2022060654号-1</a>
-        </p>
+        <p>{{ t('home.footer') }}</p>
       </div>
     </footer>
   </div>

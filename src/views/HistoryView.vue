@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { useThinkingStore } from '../stores/thinking'
 import * as storage from '../services/storage'
 import '../styles/HistoryView.css'
+import { useI18n } from 'vue-i18n'
+import LanguageSwitcher from '../components/common/LanguageSwitcher.vue'
 import { 
   History, 
   FileText, 
@@ -18,6 +20,7 @@ import {
 
 const router = useRouter()
 const store = useThinkingStore()
+const { t, locale } = useI18n()
 
 const sessions = ref([])
 
@@ -31,7 +34,7 @@ function loadSessions() {
 
 function formatDate(dateStr) {
   const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
+  return date.toLocaleDateString(locale.value, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -42,11 +45,11 @@ function formatDate(dateStr) {
 
 function getStepLabel(step) {
   const labels = {
-    1: '问题理解',
-    2: '深度分析',
-    3: '方案评估'
+    1: t('think.step1'),
+    2: t('think.step2'),
+    3: t('think.step3')
   }
-  return labels[step] || '未开始'
+  return labels[step] || t('common.unknown_error')
 }
 
 function getStatusClass(status) {
@@ -59,7 +62,7 @@ function continueSession(session) {
 }
 
 function deleteSessionConfirm(session) {
-  if (confirm(`确定要删除这个会话吗？\n"${session.problem}"`)) {
+  if (confirm(t('history.delete_confirm'))) {
     storage.deleteSession(session.id)
     loadSessions()
   }
@@ -85,7 +88,7 @@ function exportMindMap(session) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `思维导图-${session.problem.slice(0, 20)}.md`
+    a.download = `${t('step3.mindmap_filename')}`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -102,12 +105,12 @@ function goHome() {
     <header class="header">
       <div class="container header-content">
         <button class="btn btn-ghost" @click="goHome">
-          <ArrowLeft :size="16" /> 返回首页
+          <ArrowLeft :size="16" /> {{ t('common.home') }}
         </button>
         <h1 class="page-title">
-          <History :size="24" /> 历史记录
+          <History :size="24" /> {{ t('history.title') }}
         </h1>
-        <div style="width: 100px;"></div>
+        <LanguageSwitcher />
       </div>
     </header>
     
@@ -117,10 +120,9 @@ function goHome() {
         <!-- 空状态 -->
         <div v-if="sessions.length === 0" class="empty-state">
           <FileText class="empty-icon" :size="48" />
-          <h2>暂无记录</h2>
-          <p>开始你的第一次深度思考吧</p>
+          <h2>{{ t('history.empty') }}</h2>
           <button class="btn btn-primary" @click="goHome">
-            <Play :size="16" /> 开始思考
+            <Play :size="16" /> {{ t('home.start_thinking') }}
           </button>
         </div>
         
@@ -134,7 +136,7 @@ function goHome() {
             <div class="session-header">
               <div class="session-status" :class="getStatusClass(session.status)">
                 <component :is="session.status === 'completed' ? CheckCircle : Loader" :size="14" />
-                {{ session.status === 'completed' ? '已完成' : '进行中' }}
+                {{ session.status === 'completed' ? t('history.status.completed') : t('history.status.in_progress') }}
               </div>
               <div class="session-date">{{ formatDate(session.updatedAt) }}</div>
             </div>
@@ -142,7 +144,7 @@ function goHome() {
             <h3 class="session-problem">{{ session.problem }}</h3>
             
             <div class="session-progress">
-              <div class="progress-label">当前进度：{{ getStepLabel(session.currentStep) }}</div>
+              <div class="progress-label">{{ t('think.current_step', 'Progress') }}: {{ getStepLabel(session.currentStep) }}</div>
               <div class="progress-bar">
                 <div 
                   class="progress-fill"
@@ -157,26 +159,26 @@ function goHome() {
                 @click="continueSession(session)"
               >
                 <Play :size="14" />
-                {{ session.status === 'completed' ? '查看详情' : '继续思考' }}
+                {{ session.status === 'completed' ? t('history.continue') : t('history.continue') }}
               </button>
               <button 
                 v-if="session.mindMap"
                 class="btn btn-secondary"
                 @click="exportMindMap(session)"
               >
-                <Download :size="14" /> 导出思维导图
+                <Download :size="14" /> {{ t('step3.export_mindmap') }}
               </button>
               <button 
                 class="btn btn-ghost"
                 @click="exportSession(session)"
               >
-                <Save :size="14" /> 导出数据
+                <Save :size="14" /> {{ t('common.export') }}
               </button>
               <button 
                 class="btn btn-ghost delete-btn"
                 @click="deleteSessionConfirm(session)"
               >
-                <Trash2 :size="14" /> 删除
+                <Trash2 :size="14" /> {{ t('common.delete') }}
               </button>
             </div>
           </div>

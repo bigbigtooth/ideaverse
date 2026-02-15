@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import storage from '../services/storage'
 import ai from '../services/ai'
+import i18n from '../i18n'
 
 // 生成简单的哈希值 (DJB2 算法)
 function generateHash(str) {
@@ -24,6 +25,10 @@ export const useThinkingStore = defineStore('thinking', () => {
   // Getters
   const currentStep = computed(() => currentSession.value?.currentStep || 1)
   const problem = computed(() => currentSession.value?.problem || '')
+  
+  // Helper to get current locale
+  const currentLocale = computed(() => i18n.global.locale.value)
+  const t = (key, params) => i18n.global.t(key, params)
 
   // Actions
   function setLoading(status, message = '') {
@@ -50,7 +55,7 @@ export const useThinkingStore = defineStore('thinking', () => {
 
   function handleError(err) {
     console.error('Thinking Store Error:', err)
-    error.value = err.message || '发生未知错误'
+    error.value = err.message || t('common.unknown_error')
     loading.value = false
     aiStatus.value = 'idle'
   }
@@ -99,11 +104,12 @@ export const useThinkingStore = defineStore('thinking', () => {
     
     try {
       setLoading(true)
-      setAiStatus('requesting', '正在生成采访问题...')
+      setAiStatus('requesting', t('status.generating_questions'))
       
       const result = await ai.generateInterviewQuestions(
         currentSession.value.problem,
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
       
       // 兼容处理：AI 可能返回 { questions: [...] } 或直接返回 [...]
@@ -152,12 +158,13 @@ export const useThinkingStore = defineStore('thinking', () => {
 
     try {
       setLoading(true)
-      setAiStatus('requesting', '正在生成问题理解报告...')
+      setAiStatus('requesting', t('status.analyzing_answers'))
 
       const report = await ai.generateUnderstandingReport(
         currentSession.value.problem,
         currentSession.value.interviewAnswers,
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
 
       updateCurrentSession({
@@ -180,12 +187,13 @@ export const useThinkingStore = defineStore('thinking', () => {
 
     try {
       setLoading(true)
-      setAiStatus('requesting', '正在推荐思维模型...')
+      setAiStatus('requesting', t('status.recommending_models'))
 
       const result = await ai.recommendThinkingModels(
         currentSession.value.problem,
         currentSession.value.understandingReport,
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
       
       updateCurrentSession({
@@ -209,13 +217,14 @@ export const useThinkingStore = defineStore('thinking', () => {
 
     try {
       setLoading(true)
-      setAiStatus('requesting', '正在拆解分析维度...')
+      setAiStatus('requesting', t('status.generating_dimensions'))
 
       const result = await ai.generateAnalysisDimensions(
         currentSession.value.problem,
         currentSession.value.understandingReport,
         modelId,
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
 
       // 初始化分析卡片
@@ -226,10 +235,22 @@ export const useThinkingStore = defineStore('thinking', () => {
       }))
 
       // 确保使用传入的 modelId，防止 AI 返回错误的 ID
-      const model = ai.THINKING_MODELS[modelId]
+      // 现在的 THINKING_MODELS 已经没有 name 了，所以我们需要从 i18n 获取 name，或者只存 ID
+      // 之前代码: const model = ai.THINKING_MODELS[modelId]
+      // updateCurrentSession({ thinkingModel: model ? model.name : result.thinkingModel ... })
+      // 现在的 model 对象只有 id, icon 等。
+      // 我们存 ID 即可，显示时再翻译。如果需要存 name 以备后用（比如历史记录），可以用 t() 获取。
+      // 但为了历史记录的语言一致性，最好还是存 ID。
+      // 不过旧代码存了 thinkingModel (string name)。
+      // 如果我们改存 ID，需要 UI 适配。
+      // 让我们存 translated name 吧，简单点。或者最好存 ID。
+      // 为了兼容旧数据，我们保留 thinkingModel 字段，存 translated name。
+      // 同时也存 thinkingModelId。
+      
+      const modelName = t(`thinking_models.${modelId}.name`)
 
       updateCurrentSession({
-        thinkingModel: model ? model.name : result.thinkingModel,
+        thinkingModel: modelName || result.thinkingModel,
         thinkingModelId: modelId,
         analysisCards: cards,
         updatedAt: new Date().toISOString()
@@ -256,7 +277,7 @@ export const useThinkingStore = defineStore('thinking', () => {
       updateCurrentSession({ analysisCards: cards })
 
       setLoading(true)
-      setAiStatus('requesting', `正在分析维度：${cards[cardIndex].dimension}...`)
+      setAiStatus('requesting', t('status.analyzing_dimension', { dimension: cards[cardIndex].dimension }))
 
       console.log('[Thinking Store] Calling analyzeDimension with modelId:', currentSession.value.thinkingModelId)
 
@@ -265,7 +286,8 @@ export const useThinkingStore = defineStore('thinking', () => {
         currentSession.value.understandingReport,
         currentSession.value.thinkingModelId,
         cards[cardIndex],
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
 
       // 更新卡片内容
@@ -296,14 +318,15 @@ export const useThinkingStore = defineStore('thinking', () => {
 
     try {
       setLoading(true)
-      setAiStatus('requesting', '正在生成深度分析汇总报告...')
+      setAiStatus('requesting', t('status.generating_report'))
 
       const report = await ai.generateDeepAnalysisReport(
         currentSession.value.problem,
         currentSession.value.understandingReport,
         currentSession.value.thinkingModelId,
         currentSession.value.analysisCards,
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
 
       updateCurrentSession({
@@ -331,13 +354,14 @@ export const useThinkingStore = defineStore('thinking', () => {
       updateCurrentSession({ analysisCards: cards })
 
       setLoading(true)
-      setAiStatus('requesting', `正在重新分析维度：${cards[cardIndex].dimension}...`)
+      setAiStatus('requesting', t('status.reanalyzing', { dimension: cards[cardIndex].dimension }))
 
       const result = await ai.reanalyzeCard(
         currentSession.value.problem,
         cards[cardIndex],
         feedback,
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
 
       cards[cardIndex] = {
@@ -385,12 +409,13 @@ export const useThinkingStore = defineStore('thinking', () => {
 
     try {
       setLoading(true)
-      setAiStatus('requesting', '正在生成创新解决方案...')
+      setAiStatus('requesting', t('status.generating_solutions'))
 
       const result = await ai.generateSolutions(
         currentSession.value.problem,
         currentSession.value.deepAnalysisReport,
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
 
       updateCurrentSession({
@@ -423,7 +448,7 @@ export const useThinkingStore = defineStore('thinking', () => {
 
     try {
       setLoading(true)
-      setAiStatus('requesting', '正在重新优化方案...')
+      setAiStatus('requesting', t('status.regenerating_solution'))
 
       const solutions = [...currentSession.value.solutions]
       const index = solutions.findIndex(s => s.id === id)
@@ -434,7 +459,8 @@ export const useThinkingStore = defineStore('thinking', () => {
         currentSession.value.problem,
         oldSolution,
         feedback,
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
 
       solutions[index] = { ...newSolution, id: oldSolution.id } // 保持 ID 不变
@@ -468,13 +494,14 @@ export const useThinkingStore = defineStore('thinking', () => {
 
     try {
       setLoading(true)
-      setAiStatus('requesting', '正在生成思维导图...')
+      setAiStatus('requesting', t('status.generating_mindmap'))
 
       const mindMap = await ai.generateMindMap(
         currentSession.value.problem,
         currentSession.value.analysisCards,
         currentSession.value.solutions,
-        handleAiProgress
+        handleAiProgress,
+        currentLocale.value
       )
 
       updateCurrentSession({

@@ -1,5 +1,6 @@
 <script setup>
 import { Check } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 
 defineProps({
   currentStep: {
@@ -8,10 +9,12 @@ defineProps({
   }
 })
 
+const { t } = useI18n()
+
 const steps = [
-  { number: 1, label: '问题理解' },
-  { number: 2, label: '深度分析' },
-  { number: 3, label: '方案评估' }
+  { number: 1, labelKey: 'think.step1' },
+  { number: 2, labelKey: 'think.step2' },
+  { number: 3, labelKey: 'think.step3' }
 ]
 </script>
 
@@ -30,7 +33,7 @@ const steps = [
             <Check v-if="currentStep > step.number" :size="20" stroke-width="3" />
             <span v-else>{{ step.number }}</span>
           </div>
-          <span class="step-label">{{ step.label }}</span>
+          <span class="step-label">{{ t(step.labelKey) }}</span>
         </div>
         
         <div 

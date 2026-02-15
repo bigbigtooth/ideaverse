@@ -1,10 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getApiKey, setApiKey } from '../services/ai'
+import { getAiConfig, setAiConfig } from '../services/ai'
 import { getPrompts, savePrompts, resetPrompts, resetPrompt } from '../services/prompts'
 import * as storage from '../services/storage'
 import '../styles/SettingsView.css'
+import { useI18n } from 'vue-i18n'
 import { 
   Eye, 
   EyeOff, 
@@ -20,14 +21,22 @@ import {
   Trash2, 
   Info, 
   Settings,
-  Key
+  Key,
+  Globe,
+  Server
 } from 'lucide-vue-next'
 
 const router = useRouter()
+const { t, locale } = useI18n()
 
-const apiKey = ref('')
+const aiConfig = ref({
+  baseUrl: '',
+  apiKey: '',
+  model: ''
+})
 const showKey = ref(false)
 const saved = ref(false)
+const currentLanguage = ref(locale.value)
 
 // 提示词相关
 const prompts = ref({})
@@ -35,16 +44,24 @@ const expandedPrompt = ref(null) // 当前展开编辑的 prompt ID
 const promptSaved = ref(false)
 
 onMounted(() => {
-  apiKey.value = getApiKey()
+  aiConfig.value = getAiConfig()
+  currentLanguage.value = locale.value
   loadPrompts()
 })
 
 function loadPrompts() {
-  prompts.value = getPrompts()
+  prompts.value = getPrompts(currentLanguage.value)
+}
+
+function handleLanguageChange() {
+  locale.value = currentLanguage.value
+  localStorage.setItem('ideaverse_language', currentLanguage.value)
+  // Reload prompts for the new language
+  loadPrompts()
 }
 
 function savePromptSettings() {
-  savePrompts(prompts.value)
+  savePrompts(prompts.value, currentLanguage.value)
   promptSaved.value = true
   setTimeout(() => {
     promptSaved.value = false
@@ -52,14 +69,14 @@ function savePromptSettings() {
 }
 
 function handleResetPrompt(key) {
-  if (confirm('确定要重置此提示词为默认值吗？')) {
-    prompts.value = resetPrompt(key)
+  if (confirm(t('common.confirm'))) {
+    prompts.value = resetPrompt(key, currentLanguage.value)
   }
 }
 
 function handleResetAllPrompts() {
-  if (confirm('确定要重置所有提示词为默认值吗？此操作不可恢复。')) {
-    prompts.value = resetPrompts()
+  if (confirm(t('common.confirm'))) {
+    prompts.value = resetPrompts(currentLanguage.value)
   }
 }
 
@@ -71,8 +88,12 @@ function toggleExpand(key) {
   }
 }
 
-function saveApiKey() {
-  setApiKey(apiKey.value.trim())
+function saveAiConfig() {
+  setAiConfig({
+    baseUrl: aiConfig.value.baseUrl.trim(),
+    apiKey: aiConfig.value.apiKey.trim(),
+    model: aiConfig.value.model.trim()
+  })
   saved.value = true
   setTimeout(() => {
     saved.value = false
@@ -80,10 +101,10 @@ function saveApiKey() {
 }
 
 function clearAllData() {
-  if (confirm('确定要清除所有数据吗？这将删除所有历史记录和设置，此操作不可恢复！')) {
+  if (confirm(t('common.delete') + '?')) {
     storage.clearAllData()
-    apiKey.value = ''
-    alert('所有数据已清除')
+    aiConfig.value = getAiConfig()
+    alert(t('common.success'))
   }
 }
 
@@ -98,10 +119,10 @@ function goHome() {
     <header class="header">
       <div class="container header-content">
         <button class="btn btn-ghost" @click="goHome">
-          ← 返回首页
+          ← {{ t('common.home') }}
         </button>
         <h1 class="page-title">
-          <Settings class="title-icon" :size="32" /> 设置
+          <Settings class="title-icon" :size="32" /> {{ t('settings.title') }}
         </h1>
         <div style="width: 100px;"></div>
       </div>
@@ -111,68 +132,89 @@ function goHome() {
     <main class="main">
       <div class="container">
         <div class="settings-content">
-          <!-- API Key 设置 -->
+          <!-- API 配置 -->
           <section class="settings-section">
-            <h2 class="section-title"><Key class="section-icon" :size="24" /> API 配置</h2>
+            <h2 class="section-title"><Key class="section-icon" :size="24" /> {{ t('settings.api_configuration') }}</h2>
             <p class="section-desc">
-              配置 DeepSeek API Key 以启用 AI 功能。
+              {{ t('settings.api_config_desc') }}
               <a href="https://platform.deepseek.com/" target="_blank" rel="noopener">
-                获取 API Key →
+                {{ t('settings.get_api_key') }}
               </a>
             </p>
             
+            <!-- Base URL -->
             <div class="input-group">
-              <label class="input-label">DeepSeek API Key</label>
+              <label class="input-label">{{ t('settings.base_url_label') }}</label>
+              <input 
+                v-model="aiConfig.baseUrl"
+                type="text"
+                class="input"
+                :placeholder="t('settings.base_url_placeholder')"
+              />
+            </div>
+            
+            <!-- API Key -->
+            <div class="input-group">
+              <label class="input-label">{{ t('settings.api_key_label') }}</label>
               <div class="input-with-toggle">
                 <input 
-                  v-model="apiKey"
+                  v-model="aiConfig.apiKey"
                   :type="showKey ? 'text' : 'password'"
                   class="input"
-                  placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
+                  :placeholder="t('settings.api_key_placeholder')"
                 />
                 <button 
                   class="toggle-btn"
                   @click="showKey = !showKey"
                 >
                   <component :is="showKey ? EyeOff : Eye" :size="16" />
-                  {{ showKey ? '隐藏' : '显示' }}
                 </button>
-              </div>
-              
-              <div class="input-actions">
-                <button 
-                  class="btn btn-primary"
-                  @click="saveApiKey"
-                  :disabled="!apiKey.trim()"
-                >
-                  <Save :size="16" /> 保存
-                </button>
-                <span v-if="saved" class="save-success"><Check :size="16" /> 已保存</span>
               </div>
             </div>
             
-            <div class="api-info">
-              <div class="info-item">
-                <Lightbulb class="info-icon" :size="16" />
-                <span>API Key 仅保存在本地浏览器中，不会上传到任何服务器</span>
-              </div>
-              <div class="info-item">
-                <BarChart class="info-icon" :size="16" />
-                <span>使用 DeepSeek Chat 模型，按 API 调用次数计费</span>
-              </div>
+            <!-- Model -->
+            <div class="input-group">
+              <label class="input-label">{{ t('settings.model_label') }}</label>
+              <input 
+                v-model="aiConfig.model"
+                type="text"
+                class="input"
+                :placeholder="t('settings.model_placeholder')"
+              />
             </div>
+            
+            <div class="input-actions">
+              <button 
+                class="btn btn-primary"
+                @click="saveAiConfig"
+              >
+                <Save :size="16" /> {{ t('common.save') }}
+              </button>
+              <span v-if="saved" class="save-success"><Check :size="16" /> {{ t('settings.save_success') }}</span>
+            </div>
+          </section>
+
+          <!-- 语言设置 -->
+          <section class="settings-section">
+             <h2 class="section-title"><Globe class="section-icon" :size="24" /> {{ t('settings.language_label') }}</h2>
+             <div class="input-group">
+               <select v-model="currentLanguage" @change="handleLanguageChange" class="input">
+                 <option value="zh-CN">简体中文</option>
+                 <option value="en-US">English</option>
+               </select>
+             </div>
           </section>
 
           <!-- AI 提示词设置 -->
           <section class="settings-section">
             <div class="section-header">
-              <h2 class="section-title"><Bot class="section-icon" :size="24" /> AI 提示词配置</h2>
-              <button class="btn btn-sm btn-ghost" @click="handleResetAllPrompts">重置所有</button>
+              <h2 class="section-title"><Bot class="section-icon" :size="24" /> {{ t('settings.ai_prompts') }}</h2>
+              <button class="btn btn-sm btn-ghost" @click="handleResetAllPrompts">{{ t('settings.reset_all') }}</button>
             </div>
             <p class="section-desc">
-              自定义 AI 的系统提示词（System Prompt），调整 AI 的角色设定和输出格式。
+              {{ t('settings.customize_prompts') }}
               <br>
-              <small>支持使用 {variable} 形式的变量占位符，请谨慎修改。</small>
+              <small>{{ t('settings.support_variables') }}</small>
             </p>
             
             <div class="prompts-list">
@@ -196,12 +238,12 @@ function goHome() {
                     rows="10"
                   ></textarea>
                   <div class="editor-actions">
-                    <button class="btn btn-sm btn-ghost" @click="handleResetPrompt(key)">重置此项</button>
+                    <button class="btn btn-sm btn-ghost" @click="handleResetPrompt(key)">Reset</button>
                     <button class="btn btn-sm btn-primary" @click="savePromptSettings">
-                      <Save :size="14" /> 保存修改
+                      <Save :size="14" /> {{ t('common.save') }}
                     </button>
                     <span v-if="promptSaved" class="save-success">
-                      <Check :size="14" /> 已保存
+                      <Check :size="14" /> {{ t('settings.save_success') }}
                     </span>
                   </div>
                 </div>
@@ -212,22 +254,19 @@ function goHome() {
           <!-- 数据管理 -->
           <section class="settings-section">
             <h2 class="section-title">
-              <Package class="section-icon" :size="24" /> 数据管理
+              <Package class="section-icon" :size="24" /> {{ t('settings.data_management') }}
             </h2>
-            <p class="section-desc">
-              所有数据保存在浏览器本地存储中。清除浏览器数据会导致数据丢失。
-            </p>
             
             <div class="danger-zone">
               <h3 class="danger-title">
-                <AlertTriangle class="danger-icon" :size="20" /> 危险操作
+                <AlertTriangle class="danger-icon" :size="20" /> {{ t('settings.danger_zone') }}
               </h3>
-              <p class="danger-desc">清除所有本地数据，包括历史记录和设置</p>
+              <p class="danger-desc">{{ t('settings.clear_data_desc') }}</p>
               <button 
                 class="btn btn-danger"
                 @click="clearAllData"
               >
-                <Trash2 :size="16" /> 清除所有数据
+                <Trash2 :size="16" /> {{ t('settings.clear_all_data') }}
               </button>
             </div>
           </section>
@@ -235,20 +274,12 @@ function goHome() {
           <!-- 关于 -->
           <section class="settings-section">
             <h2 class="section-title">
-              <Info class="section-icon" :size="24" /> 关于
+              <Info class="section-icon" :size="24" /> {{ t('settings.about') }}
             </h2>
             <div class="about-content">
               <div class="about-item">
-                <span class="about-label">版本</span>
+                <span class="about-label">{{ t('settings.version') }}</span>
                 <span class="about-value">1.0.0</span>
-              </div>
-              <div class="about-item">
-                <span class="about-label">技术栈</span>
-                <span class="about-value">Vue 3 + Vite + DeepSeek API</span>
-              </div>
-              <div class="about-item">
-                <span class="about-label">存储方式</span>
-                <span class="about-value">浏览器 LocalStorage</span>
               </div>
             </div>
           </section>

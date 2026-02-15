@@ -1,8 +1,10 @@
 <script setup>
 import { computed } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'
+import { useI18n } from 'vue-i18n'
 
 const store = useThinkingStore()
+const { t } = useI18n()
 
 const isVisible = computed(() => {
   return ['requesting', 'receiving'].includes(store.aiStatus)
@@ -10,9 +12,9 @@ const isVisible = computed(() => {
 
 const statusText = computed(() => {
   if (store.aiStatus === 'requesting') {
-    return '正在请求 AI...'
+    return t('status.requesting')
   } else if (store.aiStatus === 'receiving') {
-    return `AI 思考中... 已接收 ${store.aiResponseCount} 字符`
+    return t('status.receiving', { count: store.aiResponseCount })
   }
   return ''
 })

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'
+import { useI18n } from 'vue-i18n'
 import { 
   Target, 
   CheckCircle, 
@@ -17,6 +18,7 @@ import {
 } from 'lucide-vue-next'
 
 const store = useThinkingStore()
+const { t } = useI18n()
 
 const currentQuestionIndex = ref(0)
 const customAnswer = ref('')
@@ -118,19 +120,19 @@ function restartInterview() {
     <div class="step-header">
       <h2 class="step-title">
         <Target class="title-icon" :size="32" stroke-width="2.5" /> 
-        步骤一：问题理解
+        {{ t('step1.title') }}
       </h2>
-      <p class="step-desc">通过几个问题，帮助我更好地理解你的深思问题</p>
+      <p class="step-desc">{{ t('step1.desc') }}</p>
     </div>
     
     <!-- 问答区域 -->
     <div v-if="store.loading && questions.length === 0" class="loading-section">
       <div class="loading-spinner"></div>
-      <span>正在生成采访问题...</span>
+      <span>{{ t('status.generating_questions') }}</span>
     </div>
     <div v-else-if="!allAnswered && !showReport && questions.length > 0" class="interview-section">
       <div class="question-progress">
-        <span>问题 {{ currentQuestionIndex + 1 }} / {{ questions.length }}</span>
+        <span>{{ t('common.loading').replace('...', '') }} {{ currentQuestionIndex + 1 }} / {{ questions.length }}</span>
         <div class="progress-bar"><div class="progress-fill" :style="{ width: ((currentQuestionIndex + 1) / questions.length * 100) + '%' }"></div></div>
       </div>
       
@@ -144,16 +146,16 @@ function restartInterview() {
             <div class="option-text">{{ option }}</div>
           </div>
           <div class="custom-option">
-            <div class="custom-label"><span>D</span> 自定义回答</div>
+            <div class="custom-label"><span>D</span> {{ t('step1.custom_answer') }}</div>
             <div class="custom-input-group">
-              <textarea v-model="customAnswer" class="input textarea" placeholder="输入你的答案..." rows="2"></textarea>
-              <button class="btn btn-primary" :disabled="!customAnswer.trim()" @click="submitCustomAnswer">确定</button>
+              <textarea v-model="customAnswer" class="input textarea" :placeholder="t('step1.custom_placeholder')" rows="2"></textarea>
+              <button class="btn btn-primary" :disabled="!customAnswer.trim()" @click="submitCustomAnswer">{{ t('common.confirm') }}</button>
             </div>
           </div>
         </div>
         <div class="question-nav">
           <button class="btn btn-ghost" :disabled="currentQuestionIndex === 0" @click="goToPrevQuestion">
-            <ArrowLeft :size="16" /> 上一题
+            <ArrowLeft :size="16" /> {{ t('common.back') }}
           </button>
         </div>
       </div>
@@ -163,8 +165,8 @@ function restartInterview() {
     <div v-else-if="allAnswered && !showReport" class="complete-section">
       <div class="complete-card">
         <CheckCircle class="complete-icon" :size="48" />
-        <h3>采访完成</h3>
-        <p>已回答 {{ answers.length }} 个问题，现在可以生成分析报告</p>
+        <h3>{{ t('common.finish') }}</h3>
+        <p>{{ t('step1.desc') }}</p>
         <div class="answers-preview">
           <div v-for="(a, i) in answers" :key="i" class="answer-item">
             <span class="q-num">Q{{ i + 1 }}</span>
@@ -173,10 +175,10 @@ function restartInterview() {
         </div>
         <div class="complete-actions">
           <button class="btn btn-ghost" @click="restartInterview">
-            <RefreshCw :size="16" /> 重新回答
+            <RefreshCw :size="16" /> {{ t('common.retry') }}
           </button>
           <button class="btn btn-primary btn-lg" @click="generateReport">
-            <FileText :size="16" /> 生成分析报告
+            <FileText :size="16" /> {{ t('common.submit') }}
           </button>
         </div>
       </div>
@@ -188,28 +190,28 @@ function restartInterview() {
         <div class="report-header">
           <h3>
             <FileText :size="20" class="header-icon" /> 
-            问题理解分析报告
+            {{ t('step1.report_title') }}
           </h3>
           <button v-if="!editingReport" class="btn btn-sm btn-ghost" @click="editingReport = true">
-            <Edit3 :size="14" /> 编辑
+            <Edit3 :size="14" /> {{ t('common.edit') }}
           </button>
           <button v-else class="btn btn-sm btn-primary" @click="saveReportEdit">
-            <Save :size="14" /> 保存
+            <Save :size="14" /> {{ t('common.save') }}
           </button>
         </div>
         
         <div class="report-content">
           <!-- 核心总结 -->
           <div class="report-block">
-            <h4><Target :size="16" /> 核心总结</h4>
+            <h4><Target :size="16" /> {{ t('step1.summary') }}</h4>
             <textarea v-if="editingReport" v-model="editedSummary" class="input textarea" rows="3"></textarea>
             <p v-else>{{ understandingReport.summary }}</p>
           </div>
           
           <!-- 关键要点 -->
           <div class="report-block">
-            <h4><Pin :size="16" /> 关键要点</h4>
-            <textarea v-if="editingReport" v-model="editedKeyPoints" class="input textarea" placeholder="每行一个要点" rows="4"></textarea>
+            <h4><Pin :size="16" /> {{ t('step1.key_points') }}</h4>
+            <textarea v-if="editingReport" v-model="editedKeyPoints" class="input textarea" placeholder="-" rows="4"></textarea>
             <ul v-else class="key-points">
               <li v-for="(point, i) in understandingReport.keyPoints" :key="i">{{ point }}</li>
             </ul>
@@ -217,7 +219,7 @@ function restartInterview() {
           
           <!-- 关注领域 -->
           <div v-if="understandingReport.focusAreas?.length" class="report-block">
-            <h4><Search :size="16" /> 关注领域</h4>
+            <h4><Search :size="16" /> {{ t('step1.focus_areas') }}</h4>
             <div class="focus-tags">
               <span v-for="(area, i) in understandingReport.focusAreas" :key="i" class="focus-tag">{{ area }}</span>
             </div>
@@ -225,24 +227,24 @@ function restartInterview() {
           
           <!-- 问题边界 -->
           <div class="report-block">
-            <h4><Ruler :size="16" /> 问题边界</h4>
+            <h4><Ruler :size="16" /> {{ t('step1.scope') }}</h4>
             <textarea v-if="editingReport" v-model="editedScope" class="input textarea" rows="2"></textarea>
             <p v-else>{{ understandingReport.scope }}</p>
           </div>
           
           <!-- 深层需求 -->
           <div v-if="understandingReport.deeperNeeds" class="report-block">
-            <h4><Lightbulb :size="16" /> 深层需求</h4>
+            <h4><Lightbulb :size="16" /> {{ t('step1.deeper_needs') }}</h4>
             <p>{{ understandingReport.deeperNeeds }}</p>
           </div>
         </div>
         
         <div class="report-footer">
           <button class="btn btn-ghost" @click="restartInterview">
-            <RefreshCw :size="16" /> 重新采访
+            <RefreshCw :size="16" /> {{ t('common.retry') }}
           </button>
           <button class="btn btn-primary btn-lg" @click="confirmAndNext">
-            确认并进入深度分析 <ArrowRight :size="16" />
+            {{ t('common.next') }} <ArrowRight :size="16" />
           </button>
         </div>
       </div>

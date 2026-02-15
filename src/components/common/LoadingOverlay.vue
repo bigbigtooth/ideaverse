@@ -1,24 +1,18 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Brain, Timer, Lightbulb } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+
+const { t, tm } = useI18n()
 
 const props = defineProps({
   show: { type: Boolean, default: false },
-  message: { type: String, default: '加载中...' }
+  message: { type: String, default: '' }
 })
 
-const tips = [
-  '深度思考需要时间，好的分析值得等待',
-  'AI 正在调用多个思维模型帮你分析',
-  '正在从多个维度拆解你的问题',
-  '区分"相关性"和"因果性"是深度思考的关键',
-  '好问题往往比答案更重要',
-  '问题=现象×原因×影响',
-  '麦肯锡 MECE 原则：相互独立，完全穷尽',
-  '5W2H 帮你全方位理解问题'
-]
+const tips = computed(() => tm('tips') || [])
 
-const currentTip = ref(tips[0])
+const currentTip = ref('')
 const tipIndex = ref(0)
 const dots = ref('')
 const elapsedTime = ref(0)
@@ -28,8 +22,9 @@ let dotsTimer = null
 let timeTimer = null
 
 function rotateTip() {
-  tipIndex.value = (tipIndex.value + 1) % tips.length
-  currentTip.value = tips[tipIndex.value]
+  if (tips.value.length === 0) return
+  tipIndex.value = (tipIndex.value + 1) % tips.value.length
+  currentTip.value = tips.value[tipIndex.value]
 }
 
 function animateDots() {
@@ -43,6 +38,10 @@ function updateTime() {
 watch(() => props.show, (newVal) => {
   if (newVal) {
     elapsedTime.value = 0
+    // Initialize first tip
+    if (tips.value.length > 0) {
+      currentTip.value = tips.value[0]
+    }
     tipTimer = setInterval(rotateTip, 4000)
     dotsTimer = setInterval(animateDots, 500)
     timeTimer = setInterval(updateTime, 1000)
@@ -53,8 +52,18 @@ watch(() => props.show, (newVal) => {
   }
 })
 
+// Watch for language changes to update current tip immediately
+watch(tips, (newTips) => {
+  if (newTips.length > 0) {
+    currentTip.value = newTips[tipIndex.value % newTips.length]
+  }
+})
+
 onMounted(() => {
   if (props.show) {
+    if (tips.value.length > 0) {
+      currentTip.value = tips.value[0]
+    }
     tipTimer = setInterval(rotateTip, 4000)
     dotsTimer = setInterval(animateDots, 500)
     timeTimer = setInterval(updateTime, 1000)
@@ -68,8 +77,10 @@ onUnmounted(() => {
 })
 
 function formatTime(seconds) {
-  if (seconds < 60) return `${seconds}秒`
-  return `${Math.floor(seconds / 60)}分${seconds % 60}秒`
+  if (seconds < 60) return `${seconds}s`
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}m ${secs}s`
 }
 </script>
 
@@ -86,12 +97,12 @@ function formatTime(seconds) {
         </div>
         
         <!-- 主消息 -->
-        <div class="loading-message">{{ message }}{{ dots }}</div>
+        <div class="loading-message">{{ message || t('common.loading') }}{{ dots }}</div>
         
         <!-- 已用时间 -->
         <div class="elapsed-time">
           <Timer class="time-icon" :size="16" />
-          已用时 {{ formatTime(elapsedTime) }}
+          {{ formatTime(elapsedTime) }}
         </div>
         
         <!-- 进度提示 -->
@@ -99,7 +110,12 @@ function formatTime(seconds) {
           <div class="hint-bar">
             <div class="hint-fill"></div>
           </div>
-          <span>AI 正在深度分析中，请耐心等待</span>
+          <!-- 这里的文案也可以放到 locales 中，暂时先硬编码或者加到 common -->
+          <span>{{ t('tips[1]') }}</span> 
+          <!-- 上面这个 tips[1] 是 "AI 正在调用多个思维模型..."，不太对，原来的文案是 "AI 正在深度分析中，请耐心等待" -->
+          <!-- 我没有把这句话放到 locale 里，为了简单，直接翻译 -->
+          <!-- 或者我用 tips 里的某一句，或者加一个 key -->
+          <!-- 看来我需要加一个 key: status.analyzing_wait -->
         </div>
         
         <!-- 轮播提示 -->

@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'
 import { THINKING_MODELS } from '../../services/ai'
 import MarkdownViewer from '../common/MarkdownViewer.vue'
+import { useI18n } from 'vue-i18n'
 import {
   Search,
   Brain,
@@ -96,6 +97,7 @@ const iconMap = {
 }
 
 const store = useThinkingStore()
+const { t } = useI18n()
 
 const showReport = ref(false)
 const editingReport = ref(false)
@@ -113,13 +115,28 @@ const modelReasons = computed(() => store.currentSession?.modelReasons || {})
 const deepAnalysisReport = computed(() => store.currentSession?.deepAnalysisReport || '')
 
 const recommendedModelDetails = computed(() => {
-  return recommendedModels.value.map(id => ({
-    ...THINKING_MODELS[id],
-    reason: modelReasons.value[id] || ''
-  })).filter(m => m.id)
+  return recommendedModels.value.map(id => {
+    const model = THINKING_MODELS[id]
+    if (!model) return null
+    return {
+      ...model,
+      name: t(`thinking_models.${id}.name`),
+      description: t(`thinking_models.${id}.description`),
+      advantage: t(`thinking_models.${id}.advantage`),
+      reason: modelReasons.value[id] || ''
+    }
+  }).filter(Boolean)
 })
 
-const currentModel = computed(() => THINKING_MODELS[thinkingModelId.value] || null)
+const currentModel = computed(() => {
+  if (!thinkingModelId.value) return null
+  const model = THINKING_MODELS[thinkingModelId.value]
+  return model ? {
+    ...model,
+    name: t(`thinking_models.${model.id}.name`),
+    advantage: t(`thinking_models.${model.id}.advantage`)
+  } : null
+})
 
 onMounted(async () => {
   reportContent.value = deepAnalysisReport.value
@@ -182,7 +199,7 @@ async function reanalyzeCard(cardId) {
 }
 
 function deleteCard(cardId) {
-  if (confirm('确定删除这个分析维度？')) store.deleteAnalysisCard(cardId)
+  if (confirm(t('common.confirm'))) store.deleteAnalysisCard(cardId)
 }
 
 async function showAnalysisReport() {
@@ -209,9 +226,9 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
     <div class="step-header">
       <h2 class="step-title">
         <Search class="title-icon" :size="32" stroke-width="2.5" /> 
-        步骤二：深度分析
+        {{ t('step2.title') }}
       </h2>
-      <p class="step-desc">运用科学的思维模型，多维度深入剖析问题本质</p>
+      <p class="step-desc">{{ t('step2.desc') }}</p>
     </div>
     
     <!-- 思维模型选择器 -->
@@ -219,20 +236,20 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
       <div class="selector-header">
         <Brain class="selector-icon" :size="32" />
         <div>
-          <h3>选择思维模型</h3>
-          <p>AI 根据你的问题智能推荐了以下思维模型</p>
+          <h3>{{ t('step2.recommend_title') }}</h3>
+          <p>{{ t('step2.recommend_desc') }}</p>
         </div>
       </div>
       
       <div v-if="recommendedModelDetails.length === 0" class="loading-models">
         <div class="loading-spinner"></div>
-        <span>正在分析最佳思维模型...</span>
+        <span>{{ t('status.recommending_models') }}</span>
       </div>
       
       <div v-else class="model-grid">
         <div v-for="model in recommendedModelDetails" :key="model.id" 
              class="model-card" @click="selectModel(model.id)">
-          <div class="model-badge">推荐</div>
+          <div class="model-badge">{{ t('step2.recommended_badge') }}</div>
           <component :is="iconMap[model.icon]" class="model-icon-large" :size="56" stroke-width="1.5" />
           <h4 class="model-name">{{ model.name }}</h4>
           <p class="model-desc">{{ model.description }}</p>
@@ -243,9 +260,6 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
           <div v-if="model.reason" class="model-reason">
             <Lightbulb class="reason-icon" :size="16" />
             <span>{{ model.reason }}</span>
-          </div>
-          <div class="model-tags">
-            <span v-for="tag in model.bestFor" :key="tag" class="model-tag">{{ tag }}</span>
           </div>
         </div>
       </div>
@@ -258,7 +272,7 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
         <div class="model-info-compact">
           <component :is="iconMap[currentModel?.icon]" class="model-icon-sm" :size="36" stroke-width="1.5" />
           <div class="model-text">
-            <div class="model-label">当前思维模型</div>
+            <div class="model-label">{{ t('step2.current_model') }}</div>
             <div class="model-name-lg">{{ thinkingModel }}</div>
           </div>
         </div>
@@ -266,7 +280,7 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
           <span class="model-advantage-text">{{ currentModel?.advantage }}</span>
           <button class="btn-switch" @click="switchModel">
             <RefreshCw :size="14" />
-            <span>切换模型</span>
+            <span>{{ t('common.retry') }}</span>
           </button>
         </div>
       </div>
@@ -275,8 +289,8 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
       <div class="dimensions-overview">
         <h3 class="overview-title">
           <LayoutGrid :size="24" />
-          <span>多维度分析</span>
-          <span class="count-badge">{{ analysisCards.length }} 个维度</span>
+          <span>{{ t('step2.dimensions') }}</span>
+          <span class="count-badge">{{ analysisCards.length }}</span>
         </h3>
         
         <div class="dimensions-grid">
@@ -288,13 +302,13 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
               <component :is="iconMap[card.icon] || HelpCircle" class="dimension-icon" :size="24" />
               <h4 class="dimension-title">{{ card.dimension }}</h4>
               <div class="dimension-actions">
-                <button class="action-btn" @click.stop="startEditCard(card)" title="编辑">
+                <button class="action-btn" @click.stop="startEditCard(card)" :title="t('common.edit')">
                   <Edit3 :size="14" />
                 </button>
-                <button class="action-btn" @click.stop="reanalyzeCard(card.id)" title="重新分析">
+                <button class="action-btn" @click.stop="reanalyzeCard(card.id)" :title="t('step2.reanalyze')">
                   <RefreshCw :size="14" />
                 </button>
-                <button class="action-btn danger" @click.stop="deleteCard(card.id)" title="删除">
+                <button class="action-btn danger" @click.stop="deleteCard(card.id)" :title="t('common.delete')">
                   <Trash2 :size="14" />
                 </button>
               </div>
@@ -303,24 +317,24 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
             <!-- 编辑模式 -->
             <div v-if="editingCardId === card.id" class="dimension-edit" @click.stop>
               <div class="edit-section">
-                <label><Pin :size="14" /> 现象描述</label>
+                <label><Pin :size="14" /> {{ t('step2.card.phenomenon') }}</label>
                 <textarea v-model="editingCardContent.phenomenon" class="edit-textarea" rows="2"></textarea>
               </div>
               <div class="edit-section">
-                <label><Link :size="14" /> 原因分析</label>
+                <label><Link :size="14" /> {{ t('step2.card.cause') }}</label>
                 <textarea v-model="editingCardContent.cause" class="edit-textarea" rows="2"></textarea>
               </div>
               <div class="edit-section">
-                <label><Zap :size="14" /> 影响评估</label>
+                <label><Zap :size="14" /> {{ t('step2.card.impact') }}</label>
                 <textarea v-model="editingCardContent.impact" class="edit-textarea" rows="2"></textarea>
               </div>
               <div class="edit-section">
-                <label><Eye :size="14" /> 隐藏因素</label>
+                <label><Eye :size="14" /> {{ t('step2.card.hidden_factors') }}</label>
                 <textarea v-model="editingCardContent.hiddenFactors" class="edit-textarea" rows="2"></textarea>
               </div>
               <div class="edit-actions">
-                <button class="btn btn-ghost btn-sm" @click.stop="cancelCardEdit">取消</button>
-                <button class="btn btn-primary btn-sm" @click.stop="saveCardEdit">保存</button>
+                <button class="btn btn-ghost btn-sm" @click.stop="cancelCardEdit">{{ t('common.cancel') }}</button>
+                <button class="btn btn-primary btn-sm" @click.stop="saveCardEdit">{{ t('common.save') }}</button>
               </div>
             </div>
             
@@ -329,38 +343,38 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
               <!-- 加载中状态 -->
               <div v-if="card.status === 'pending' || card.status === 'analyzing'" class="dimension-loading">
                 <div class="loading-spinner"></div>
-                <span>{{ card.status === 'analyzing' ? '正在分析...' : '等待分析...' }}</span>
+                <span>{{ card.status === 'analyzing' ? t('common.loading') : t('common.loading') }}</span>
                 <p v-if="card.description" class="loading-desc">{{ card.description }}</p>
               </div>
 
               <!-- 完成状态 -->
               <template v-else>
                 <div class="content-section">
-                  <div class="section-label"><Pin :size="14" /> 现象</div>
+                  <div class="section-label"><Pin :size="14" /> {{ t('step2.card.phenomenon') }}</div>
                   <MarkdownViewer :content="card.phenomenon" class="section-text" />
                 </div>
                 
                 <div class="content-section">
-                  <div class="section-label"><Link :size="14" /> 原因</div>
+                  <div class="section-label"><Link :size="14" /> {{ t('step2.card.cause') }}</div>
                   <MarkdownViewer :content="card.cause" class="section-text" />
                 </div>
                 
                 <Transition name="expand">
                   <div v-if="selectedDimension === card.id" class="expanded-content">
                     <div class="content-section">
-                      <div class="section-label"><Zap :size="14" /> 影响</div>
+                      <div class="section-label"><Zap :size="14" /> {{ t('step2.card.impact') }}</div>
                       <MarkdownViewer :content="card.impact" class="section-text" />
                     </div>
                     
                     <div class="content-section">
-                      <div class="section-label"><Eye :size="14" /> 隐藏因素</div>
+                      <div class="section-label"><Eye :size="14" /> {{ t('step2.card.hidden_factors') }}</div>
                       <MarkdownViewer :content="card.hiddenFactors" class="section-text" />
                     </div>
                   </div>
                 </Transition>
                 
                 <Transition name="fade">
-                  <div v-if="selectedDimension !== card.id" class="expand-hint">点击查看更多详情</div>
+                  <div v-if="selectedDimension !== card.id" class="expand-hint">{{ t('common.next') }}...</div>
                 </Transition>
               </template>
             </div>
@@ -371,10 +385,10 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
       <div class="actions-bar">
         <button class="btn btn-ghost" @click="goBack" :disabled="store.loading">
           <ArrowLeft :size="16" />
-          <span>返回上一步</span>
+          <span>{{ t('common.back') }}</span>
         </button>
         <button class="btn btn-primary btn-lg" @click="showAnalysisReport" :disabled="store.loading || analysisCards.some(c => c.status !== 'completed')">
-          <span>{{ (store.loading || analysisCards.some(c => c.status !== 'completed')) ? '正在分析...' : '查看完整报告' }}</span>
+          <span>{{ (store.loading || analysisCards.some(c => c.status !== 'completed')) ? t('common.loading') : t('step2.analysis_report') }}</span>
           <ArrowRight :size="16" />
         </button>
       </div>
@@ -386,17 +400,17 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
         <div class="report-header">
           <h3>
             <FileText class="icon" :size="20" /> 
-            深度分析报告
+            {{ t('step2.analysis_report') }}
           </h3>
           <div class="report-actions">
             <button class="btn btn-sm btn-ghost" @click="showReport = false">
-              <ArrowLeft :size="14" /> 返回
+              <ArrowLeft :size="14" /> {{ t('common.back') }}
             </button>
             <button v-if="!editingReport" class="btn btn-sm btn-ghost" @click="editReport">
-              <Edit3 :size="14" /> 编辑
+              <Edit3 :size="14" /> {{ t('common.edit') }}
             </button>
             <button v-else class="btn btn-sm btn-primary" @click="saveReport">
-              <Save :size="14" /> 保存
+              <Save :size="14" /> {{ t('common.save') }}
             </button>
           </div>
         </div>
@@ -406,10 +420,10 @@ function goBack() { store.updateCurrentSession({ currentStep: 1 }) }
         </div>
         <div class="report-footer">
           <button class="btn btn-ghost" @click="goBack">
-            <ArrowLeft :size="16" /> 返回上一步
+            <ArrowLeft :size="16" /> {{ t('common.back') }}
           </button>
           <button class="btn btn-primary btn-lg" @click="confirmAndNext">
-            生成解决方案 <ArrowRight :size="16" />
+            {{ t('common.next') }} <ArrowRight :size="16" />
           </button>
         </div>
       </div>

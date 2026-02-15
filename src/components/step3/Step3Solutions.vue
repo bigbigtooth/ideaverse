@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'
+import { useI18n } from 'vue-i18n'
 import MarkdownViewer from '../common/MarkdownViewer.vue'
 import { Transformer } from 'markmap-lib'
 import { Markmap } from 'markmap-view'
@@ -36,6 +37,7 @@ import {
 } from 'lucide-vue-next'
 
 const store = useThinkingStore()
+const { t, locale } = useI18n()
 
 const showMindMap = ref(false)
 const mindMapContent = ref('')
@@ -302,7 +304,7 @@ async function generateMindMapAndShow() {
 
 function copyMindMap() {
   navigator.clipboard.writeText(mindMapContent.value)
-  alert('已复制到剪贴板')
+  alert(t('common.copied'))
 }
 
 function downloadMindMap() {
@@ -310,7 +312,7 @@ function downloadMindMap() {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = '深度思考-思维导图.md'
+  a.download = t('step3.mindmap_filename')
   a.click()
   URL.revokeObjectURL(url)
 }
@@ -337,9 +339,15 @@ async function processWatermark(dataUrl) {
           ctx.globalAlpha = 0.5
           
           // 配置水印参数
-          const text = '深度思界'
+          const text = t('step3.watermark_text')
           const fontSize = Math.max(24, Math.floor(img.width / 40))
-          ctx.font = `500 ${fontSize}px "KaiTi", "STKaiti", "楷体", serif`
+          
+          // 根据语言选择字体
+          const fontParams = locale.value === 'zh-CN' 
+            ? '"KaiTi", "STKaiti", "楷体", serif'
+            : 'serif'
+            
+          ctx.font = `500 ${fontSize}px ${fontParams}`
           ctx.fillStyle = '#000000'
           ctx.textAlign = 'right'
           ctx.textBaseline = 'bottom'
@@ -362,7 +370,12 @@ async function processWatermark(dataUrl) {
           
           // 触发下载
           const link = document.createElement('a')
-          link.download = `深度思考-思维导图-${new Date().getTime()}.png`
+          const timestamp = new Date().getTime()
+          const filename = locale.value === 'zh-CN'
+            ? `深度思考-思维导图-${timestamp}.png`
+            : `Ideaverse-MindMap-${timestamp}.png`
+            
+          link.download = filename
           link.href = canvas.toDataURL('image/png')
           link.click()
           
@@ -375,9 +388,14 @@ async function processWatermark(dataUrl) {
           // 设置水印全局透明度
           ctx.globalAlpha = 0.5
           
-          const text = '深度思界'
+          const text = t('step3.watermark_text')
           const fontSize = Math.max(24, Math.floor(img.width / 40))
-          ctx.font = `500 ${fontSize}px "KaiTi", "STKaiti", "楷体", serif`
+          
+          const fontParams = locale.value === 'zh-CN' 
+            ? '"KaiTi", "STKaiti", "楷体", serif'
+            : 'serif'
+            
+          ctx.font = `500 ${fontSize}px ${fontParams}`
           ctx.fillStyle = '#000000'
           ctx.textAlign = 'right'
           ctx.textBaseline = 'bottom'
@@ -386,7 +404,12 @@ async function processWatermark(dataUrl) {
           ctx.fillText(text, canvas.width - padding, canvas.height - padding)
           
           const link = document.createElement('a')
-          link.download = `深度思考-思维导图-${new Date().getTime()}.png`
+          const timestamp = new Date().getTime()
+          const filename = locale.value === 'zh-CN'
+            ? `深度思考-思维导图-${timestamp}.png`
+            : `Ideaverse-MindMap-${timestamp}.png`
+            
+          link.download = filename
           link.href = canvas.toDataURL('image/png')
           link.click()
           resolve()
@@ -494,9 +517,9 @@ async function downloadImage() {
            })
            const a = document.createElement('a')
            a.href = svgDataUrl
-           a.download = '深度思考-思维导图.svg'
+           a.download = locale.value === 'zh-CN' ? '深度思考-思维导图.svg' : 'Ideaverse-MindMap.svg'
            a.click()
-           alert('图片导出失败，已为您导出 SVG 矢量图格式')
+           alert(t('common.error') + ': SVG exported')
            return
         }
       }
@@ -508,7 +531,7 @@ async function downloadImage() {
 
   } catch (err) {
     console.error('导出流程异常:', err)
-    alert('导出出错，请重试')
+    alert(t('common.error'))
   } finally {
     // 6. 恢复现场 (Restore)
     // 恢复样式
@@ -545,21 +568,21 @@ function goBack() {
     <div class="step-header">
       <h2 class="step-title">
         <Lightbulb class="title-icon" :size="32" stroke-width="2.5" /> 
-        步骤三：方案评估
+        {{ t('step3.title') }}
       </h2>
-      <p class="step-desc">头脑风暴生成方案，结构化评估找到最优解</p>
+      <p class="step-desc">{{ t('step3.desc') }}</p>
     </div>
     
     <div v-if="!showMindMap">
       <!-- 加载中 -->
       <div v-if="solutions.length === 0 && store.loading" class="loading-section">
         <div class="loading-spinner"></div>
-        <span>正在生成创新解决方案...</span>
+        <span>{{ t('status.generating_solutions') }}</span>
       </div>
 
       <!-- 推荐方案横幅 -->
       <div v-else-if="recommendation" class="recommendation-banner">
-        <div class="rec-badge"><Trophy :size="16" /> 推荐方案</div>
+        <div class="rec-badge"><Trophy :size="16" /> {{ t('step2.recommend_title') }}</div>
         <div class="rec-info">
           <h3 class="rec-name">{{ solutions.find(s => s.id === recommendation.bestSolution)?.name }}</h3>
           <p class="rec-reason">{{ recommendation.reason }}</p>
@@ -575,14 +598,14 @@ function goBack() {
           <!-- 卡片头部 -->
           <div class="card-header" @click="toggleExpand(solution.id)">
             <div class="header-left">
-              <span class="solution-index">方案 {{ index + 1 }}</span>
+              <span class="solution-index">{{ t('step3.solutions_title') }} {{ index + 1 }}</span>
               <h3 class="solution-name">{{ solution.name }}</h3>
-              <span v-if="solution.id === recommendation?.bestSolution" class="best-tag"><Sparkles :size="12" /> 最佳</span>
+              <span v-if="solution.id === recommendation?.bestSolution" class="best-tag"><Sparkles :size="12" /> {{ t('step2.recommend_title') }}</span>
             </div>
             <div class="header-right">
               <div class="total-score" :class="getScoreClass(solution.weightedScore)">
                 <span class="score-value">{{ solution.weightedScore?.toFixed(1) }}</span>
-                <span class="score-label">综合评分</span>
+                <span class="score-label">{{ t('step3.weighted_score') }}</span>
               </div>
               <span class="expand-icon">
                 <ChevronDown v-if="expandedCardId === solution.id" :size="20" />
@@ -600,7 +623,7 @@ function goBack() {
           <div class="metrics-section">
             <div class="metric-bar">
               <div class="metric-header">
-                <span class="metric-name"><Target :size="14" /> 有效性</span>
+                <span class="metric-name"><Target :size="14" /> {{ t('step3.effectiveness') }}</span>
                 <span class="metric-score" :class="getScoreClass(solution.effectiveness)">{{ solution.effectiveness }}/10</span>
               </div>
               <div class="progress-bar">
@@ -609,7 +632,7 @@ function goBack() {
             </div>
             <div class="metric-bar">
               <div class="metric-header">
-                <span class="metric-name"><Zap :size="14" /> 可行性</span>
+                <span class="metric-name"><Zap :size="14" /> {{ t('step3.feasibility') }}</span>
                 <span class="metric-score" :class="getScoreClass(solution.feasibility)">{{ solution.feasibility }}/10</span>
               </div>
               <div class="progress-bar">
@@ -618,7 +641,7 @@ function goBack() {
             </div>
             <div class="metric-bar">
               <div class="metric-header">
-                <span class="metric-name"><RefreshCw :size="14" /> 可持续性</span>
+                <span class="metric-name"><RefreshCw :size="14" /> {{ t('step3.sustainability') }}</span>
                 <span class="metric-score" :class="getScoreClass(solution.sustainability)">{{ solution.sustainability }}/10</span>
               </div>
               <div class="progress-bar">
@@ -631,23 +654,23 @@ function goBack() {
           <div v-if="expandedCardId !== solution.id && editingSolutionId !== solution.id" 
                class="expand-hint" 
                @click.stop="toggleExpand(solution.id)">
-            <span>查看完整方案详情</span>
+            <span>{{ t('common.next') }}</span>
             <ChevronDown class="icon" :size="16" />
           </div>
           
           <!-- 编辑模式 -->
           <div v-if="editingSolutionId === solution.id" class="edit-section">
             <div class="edit-field">
-              <label>方案描述</label>
+              <label>{{ t('common.edit') }}</label>
               <textarea v-model="editingContent.description" class="edit-textarea" rows="4"></textarea>
             </div>
             <div class="edit-field">
-              <label>实施步骤</label>
+              <label>{{ t('step3.implementation') }}</label>
               <textarea v-model="editingContent.implementation" class="edit-textarea" rows="4"></textarea>
             </div>
             <div class="edit-actions">
-              <button class="btn btn-ghost" @click="cancelEdit">取消</button>
-              <button class="btn btn-primary" @click="saveEdit">保存修改</button>
+              <button class="btn btn-ghost" @click="cancelEdit">{{ t('common.cancel') }}</button>
+              <button class="btn btn-primary" @click="saveEdit">{{ t('common.save') }}</button>
             </div>
           </div>
           
@@ -658,35 +681,35 @@ function goBack() {
                 <div class="detail-card">
                   <Clock class="detail-icon" :size="24" />
                   <div class="detail-content">
-                    <h4>实施周期</h4>
+                    <h4>{{ t('step3.implementation') }}</h4>
                     <p>{{ solution.timeframe }}</p>
                   </div>
                 </div>
                 <div class="detail-card">
                   <Package class="detail-icon" :size="24" />
                   <div class="detail-content">
-                    <h4>所需资源</h4>
+                    <h4>{{ t('step3.cost_benefit') }}</h4>
                     <p>{{ solution.resources }}</p>
                   </div>
                 </div>
                 <div class="detail-card warning">
                   <AlertTriangle class="detail-icon" :size="24" />
                   <div class="detail-content">
-                    <h4>最坏情况</h4>
+                    <h4>{{ t('step3.worst_case') }}</h4>
                     <p>{{ solution.worstCase }}</p>
                   </div>
                 </div>
                 <div class="detail-card success">
                   <Shield class="detail-icon" :size="24" />
                   <div class="detail-content">
-                    <h4>应对策略</h4>
+                    <h4>{{ t('step3.countermeasure') }}</h4>
                     <p>{{ solution.countermeasure }}</p>
                   </div>
                 </div>
               </div>
               
               <div v-if="solution.implementation" class="implementation-section">
-                <h4><Clipboard :size="16" /> 实施步骤</h4>
+                <h4><Clipboard :size="16" /> {{ t('step3.implementation') }}</h4>
                 <div class="implementation-content">
                   <MarkdownViewer :content="solution.implementation" />
                 </div>
@@ -698,11 +721,11 @@ function goBack() {
           <div class="card-actions">
             <button class="action-btn" @click.stop="startEditSolution(solution)">
               <Edit3 :size="14" />
-              <span>编辑方案</span>
+              <span>{{ t('common.edit') }}</span>
             </button>
             <button class="action-btn" @click.stop="regenerate(solution.id)">
               <RefreshCw :size="14" />
-              <span>重新生成</span>
+              <span>{{ t('step3.regenerate') }}</span>
             </button>
           </div>
         </div>
@@ -711,11 +734,11 @@ function goBack() {
       <div class="bottom-actions">
         <button class="btn btn-ghost btn-lg" @click="goBack">
           <ArrowLeft :size="16" />
-          <span>返回上一步</span>
+          <span>{{ t('common.back') }}</span>
         </button>
         <button class="btn btn-primary btn-lg" @click="generateMindMapAndShow">
           <Network :size="16" />
-          <span>生成思维导图</span>
+          <span>{{ t('step3.export_mindmap') }}</span>
         </button>
       </div>
     </div>
@@ -728,17 +751,17 @@ function goBack() {
             <button class="btn-icon-back" @click="showMindMap = false">
               <ArrowLeft :size="20" />
             </button>
-            <h3>深度思考思维导图</h3>
+            <h3>{{ t('step3.export_mindmap') }}</h3>
           </div>
           <div class="mindmap-actions">
             <button class="btn btn-secondary" @click="downloadImage" v-if="activeTab === 'mindmap'">
-              <ImageIcon :size="14" /> 导出图片
+              <ImageIcon :size="14" /> {{ t('common.export') }} PNG
             </button>
             <button class="btn btn-secondary" @click="downloadMindMap">
-              <Download :size="14" /> 导出MD
+              <Download :size="14" /> {{ t('common.export') }} MD
             </button>
             <button class="btn btn-secondary" @click="copyMindMap">
-              <Copy :size="14" /> 复制文本
+              <Copy :size="14" /> {{ t('common.copy') }}
             </button>
           </div>
         </div>
@@ -750,7 +773,7 @@ function goBack() {
               @click="activeTab = 'mindmap'"
             >
               <Network :size="16" />
-              思维导图
+              {{ t('step3.mind_map') }}
             </div>
             <div 
               class="tab-item" 
@@ -758,7 +781,7 @@ function goBack() {
               @click="activeTab = 'markdown'"
             >
               <FileText :size="16" />
-              Markdown
+              {{ t('step3.markdown') }}
             </div>
         </div>
 
@@ -766,7 +789,7 @@ function goBack() {
           <div v-show="activeTab === 'mindmap'" class="mindmap-view" @click="showFullscreen = true">
              <div class="mindmap-overlay-hint">
                <Maximize2 :size="24" />
-               <span>点击全屏查看</span>
+               <span>{{ t('step3.click_to_fullscreen') }}</span>
              </div>
              <svg ref="svgRef" class="markmap-svg"></svg>
           </div>
@@ -776,8 +799,8 @@ function goBack() {
         </div>
         <div class="mindmap-footer">
           <PartyPopper class="complete-badge-icon" :size="48" />
-          <h3>恭喜！你已完成本次深度思考</h3>
-          <p>思维导图已生成，可以复制或下载保存</p>
+          <h3>{{ t('common.success') }}!</h3>
+          <p>{{ t('common.finish') }}</p>
         </div>
       </div>
     </div>

@@ -63,7 +63,9 @@
 }
 
 .header-right {
-  width: 80px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
 }
 
 /* Problem Bar */
