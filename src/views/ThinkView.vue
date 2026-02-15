@@ -1,3 +1,18 @@
+<!--
+  @fileoverview Main thinking workflow view component
+  @module views/ThinkView
+  @description The main analysis workflow page that orchestrates the three-step
+  thinking process:
+  - Step 1: Problem Interview - Collect clarifying information
+  - Step 2: Deep Analysis - Apply thinking models and analyze dimensions
+  - Step 3: Solution Generation - Generate and evaluate solutions
+  
+  Supports loading existing sessions via route parameter.
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -8,7 +23,6 @@ import { AlertCircle, X } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import LanguageSwitcher from '../components/common/LanguageSwitcher.vue'
 
-// 子组件
 import StepProgress from '../components/common/StepProgress.vue'
 import Step1Interview from '../components/step1/Step1Interview.vue'
 import Step2Analysis from '../components/step2/Step2Analysis.vue'
@@ -53,10 +67,8 @@ function goHome() {
 
 <template>
   <div class="think-view" v-if="initialized">
-    <!-- 全局状态提示 -->
     <GlobalStatusTooltip />
     
-    <!-- 头部 -->
     <header class="header">
       <div class="container header-content">
         <button class="btn btn-ghost back-btn" @click="goHome">
@@ -73,7 +85,6 @@ function goHome() {
       </div>
     </header>
     
-    <!-- 问题显示 -->
     <div class="problem-bar">
       <div class="container">
         <div class="problem-content">
@@ -83,13 +94,10 @@ function goHome() {
       </div>
     </div>
     
-    <!-- 步骤进度 -->
     <StepProgress :current-step="currentStep" />
     
-    <!-- 主内容区 -->
     <main class="main">
       <div class="container">
-        <!-- 错误提示 -->
         <div v-if="store.error" class="error-banner">
           <AlertCircle class="error-icon" :size="20" />
           <span>{{ store.error }}</span>
@@ -98,7 +106,6 @@ function goHome() {
           </button>
         </div>
         
-        <!-- 步骤内容 -->
         <transition name="fade" mode="out-in">
           <Step1Interview v-if="currentStep === 1" key="step1" />
           <Step2Analysis v-else-if="currentStep === 2" key="step2" />
@@ -108,5 +115,3 @@ function goHome() {
     </main>
   </div>
 </template>
-
-<!-- Styles are imported from ../styles/ThinkView.css -->

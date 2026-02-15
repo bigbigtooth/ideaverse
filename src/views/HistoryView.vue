@@ -1,3 +1,18 @@
+<!--
+  @fileoverview Session history view component
+  @module views/HistoryView
+  @description Displays a list of all saved analysis sessions.
+  Allows users to:
+  - View session details (problem, status, progress)
+  - Continue an existing session
+  - Export session data as JSON
+  - Export mind map as Markdown
+  - Delete sessions
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -101,7 +116,6 @@ function goHome() {
 
 <template>
   <div class="history-view">
-    <!-- 头部 -->
     <header class="header">
       <div class="container header-content">
         <button class="btn btn-ghost" @click="goHome">
@@ -114,10 +128,8 @@ function goHome() {
       </div>
     </header>
     
-    <!-- 主内容 -->
     <main class="main">
       <div class="container">
-        <!-- 空状态 -->
         <div v-if="sessions.length === 0" class="empty-state">
           <FileText class="empty-icon" :size="48" />
           <h2>{{ t('history.empty') }}</h2>
@@ -126,7 +138,6 @@ function goHome() {
           </button>
         </div>
         
-        <!-- 会话列表 -->
         <div v-else class="sessions-list">
           <div 
             v-for="session in sessions" 
@@ -187,5 +198,3 @@ function goHome() {
     </main>
   </div>
 </template>
-
-<!-- Styles are imported from ../styles/HistoryView.css -->

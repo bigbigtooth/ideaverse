@@ -1,3 +1,14 @@
+<!--
+  @fileoverview Home page view component
+  @module views/HomeView
+  @description The landing page for IdeaVerse application.
+  Displays the main input area for entering problems, feature highlights,
+  and navigation to other pages (History, Settings).
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -52,7 +63,6 @@ function goToHistory() {
 
 <template>
   <div class="home">
-    <!-- 头部导航 -->
     <header class="header">
       <div class="container header-content">
         <div class="logo">
@@ -73,10 +83,8 @@ function goToHistory() {
       </div>
     </header>
     
-    <!-- 主内容区 -->
     <main class="main">
       <div class="container">
-        <!-- Hero 区域 -->
         <section class="hero">
           <h1 class="hero-title">
             {{ t('home.slogan') }}
@@ -85,7 +93,6 @@ function goToHistory() {
             {{ t('home.start_thinking') }}
           </p>
           
-          <!-- API Key 警告 -->
           <div v-if="showApiKeyWarning" class="api-warning">
             <AlertTriangle class="warning-icon" :size="16" />
             <span>{{ t('settings.api_key_missing') }}</span>
@@ -95,7 +102,6 @@ function goToHistory() {
           </div>
         </section>
         
-        <!-- 输入区域 -->
         <section class="input-section">
           <div class="input-card">
             <div class="input-header">
@@ -122,7 +128,6 @@ function goToHistory() {
           </div>
         </section>
         
-        <!-- 功能介绍 -->
         <section class="features">
           <h2 class="features-title">{{ t('common.brand_name') }}</h2>
           <div class="features-grid">
@@ -153,7 +158,6 @@ function goToHistory() {
           </div>
         </section>
         
-        <!-- 思维模型展示 (Optional: could also be translated if needed, but these are mostly proper nouns or handled by generic list) -->
         <section class="models">
           <h2 class="models-title">{{ t('step2.recommend_title') }}</h2>
           <div class="models-list">
@@ -167,7 +171,6 @@ function goToHistory() {
       </div>
     </main>
     
-    <!-- 底部 -->
     <footer class="footer">
       <div class="container">
         <p>{{ t('home.footer') }}</p>
@@ -177,7 +180,6 @@ function goToHistory() {
 </template>
 
 <style scoped>
-/* 样式微调，配合 Lucide 图标 */
 .hero-badge {
   display: inline-flex;
   align-items: center;

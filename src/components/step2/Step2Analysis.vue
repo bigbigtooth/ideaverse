@@ -1,3 +1,19 @@
+<!--
+  @fileoverview Step 2: Deep Analysis component
+  @module components/step2/Step2Analysis
+  @description The second step in the thinking workflow. Applies selected
+  thinking models to analyze the problem across multiple dimensions.
+  
+  Features:
+  - AI-recommended thinking model selection
+  - Multi-dimensional analysis with progress tracking
+  - Analysis card editing and regeneration
+  - Deep analysis report generation
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'

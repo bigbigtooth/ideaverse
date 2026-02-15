@@ -1,3 +1,20 @@
+<!--
+  @fileoverview Step 1: Problem Interview component
+  @module components/step1/Step1Interview
+  @description The first step in the thinking workflow. Collects clarifying
+  information about the problem through AI-generated interview questions.
+  Generates an understanding report that guides subsequent analysis.
+  
+  Features:
+  - AI-generated interview questions with multiple choice options
+  - Custom answer input capability
+  - Understanding report generation and editing
+  - Progress tracking through questions
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'

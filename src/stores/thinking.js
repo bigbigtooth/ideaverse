@@ -1,36 +1,122 @@
+/**
+ * @fileoverview Pinia store for managing the thinking analysis workflow
+ * @module stores/thinking
+ * @description This store manages the entire three-step thinking analysis process:
+ * Step 1: Problem Interview - Generate and collect answers to clarifying questions
+ * Step 2: Deep Analysis - Apply thinking models and analyze dimensions
+ * Step 3: Solution Generation - Generate and evaluate solutions
+ * 
+ * @copyright 2026 BigTooth
+ * @license GPL-3.0
+ */
+
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import storage from '../services/storage'
 import ai from '../services/ai'
 import i18n from '../i18n'
 
-// 生成简单的哈希值 (DJB2 算法)
+/**
+ * Generates a simple hash value using the DJB2 algorithm
+ * Used for caching mind map data to avoid redundant AI calls
+ * @param {string} str - The input string to hash
+ * @returns {number} An unsigned 32-bit integer hash value
+ */
 function generateHash(str) {
   let hash = 5381
   for (let i = 0; i < str.length; i++) {
     hash = (hash * 33) ^ str.charCodeAt(i)
   }
-  return hash >>> 0 // 确保是无符号整数
+  return hash >>> 0
 }
 
+/**
+ * Pinia store for managing the thinking analysis workflow
+ * @typedef {Object} ThinkingStore
+ * @property {Object|null} currentSession - The current analysis session
+ * @property {boolean} loading - Global loading state
+ * @property {string|null} error - Current error message if any
+ * @property {string} aiStatus - Current AI operation status ('idle'|'requesting'|'receiving'|'completed')
+ * @property {string} aiStatusMessage - Human-readable status message
+ * @property {number} aiResponseCount - Character count of streaming response
+ */
+
+/**
+ * Session data structure
+ * @typedef {Object} Session
+ * @property {string} id - Unique session identifier
+ * @property {string} problem - The problem being analyzed
+ * @property {number} currentStep - Current step in the workflow (1-3)
+ * @property {Array<Object>} interviewQuestions - Generated interview questions
+ * @property {Array<Object>} interviewAnswers - User's answers to interview questions
+ * @property {string} understandingReport - AI-generated understanding report
+ * @property {Array<Object>} recommendedModels - Recommended thinking models
+ * @property {Object} modelReasons - Reasons for model recommendations
+ * @property {string} thinkingModel - Name of selected thinking model
+ * @property {string} thinkingModelId - ID of selected thinking model
+ * @property {Array<Object>} analysisCards - Analysis dimension cards
+ * @property {string} deepAnalysisReport - Comprehensive analysis report
+ * @property {Array<Object>} solutions - Generated solutions
+ * @property {string} recommendation - Final recommendation
+ * @property {Object} mindMap - Mind map data structure
+ * @property {number} mindMapHash - Hash for cache validation
+ * @property {string} createdAt - ISO timestamp of creation
+ * @property {string} updatedAt - ISO timestamp of last update
+ */
+
 export const useThinkingStore = defineStore('thinking', () => {
+  // ============================================
   // State
+  // ============================================
+  
+  /** @type {import('vue').Ref<Session|null>} Current analysis session */
   const currentSession = ref(null)
+  
+  /** @type {import('vue').Ref<boolean>} Global loading indicator */
   const loading = ref(false)
+  
+  /** @type {import('vue').Ref<string|null>} Current error message */
   const error = ref(null)
-  const aiStatus = ref('idle') // idle, requesting, receiving, completed
+  
+  /** @type {import('vue').Ref<string>} AI operation status */
+  const aiStatus = ref('idle')
+  
+  /** @type {import('vue').Ref<string>} Human-readable AI status message */
   const aiStatusMessage = ref('')
+  
+  /** @type {import('vue').Ref<number>} Character count for streaming progress */
   const aiResponseCount = ref(0)
 
+  // ============================================
   // Getters
+  // ============================================
+  
+  /** @returns {number} Current step in the workflow */
   const currentStep = computed(() => currentSession.value?.currentStep || 1)
+  
+  /** @returns {string} The problem being analyzed */
   const problem = computed(() => currentSession.value?.problem || '')
   
-  // Helper to get current locale
+  /** @returns {string} Current locale for i18n */
   const currentLocale = computed(() => i18n.global.locale.value)
+  
+  /**
+   * Translation helper function
+   * @param {string} key - Translation key
+   * @param {Object} [params] - Optional parameters for interpolation
+   * @returns {string} Translated string
+   */
   const t = (key, params) => i18n.global.t(key, params)
 
-  // Actions
+  // ============================================
+  // Helper Actions
+  // ============================================
+  
+  /**
+   * Sets the loading state and clears any previous error
+   * @param {boolean} status - New loading state
+   * @param {string} [message=''] - Optional status message
+   */
   function setLoading(status, message = '') {
     loading.value = status
     if (status) {
@@ -38,6 +124,11 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Updates the AI operation status
+   * @param {string} status - New status ('idle'|'requesting'|'receiving'|'completed')
+   * @param {string} [message=''] - Optional status message
+   */
   function setAiStatus(status, message = '') {
     aiStatus.value = status
     if (message) {
@@ -48,11 +139,19 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Handles streaming progress updates
+   * @param {number} currentLength - Current character count of the response
+   */
   function handleAiProgress(currentLength) {
     aiStatus.value = 'receiving'
     aiResponseCount.value = currentLength
   }
 
+  /**
+   * Handles errors by logging and updating state
+   * @param {Error} err - The error that occurred
+   */
   function handleError(err) {
     console.error('Thinking Store Error:', err)
     error.value = err.message || t('common.unknown_error')
@@ -60,7 +159,15 @@ export const useThinkingStore = defineStore('thinking', () => {
     aiStatus.value = 'idle'
   }
 
+  // ============================================
   // Session Management
+  // ============================================
+  
+  /**
+   * Loads a session by ID
+   * @param {string} id - Session ID to load
+   * @returns {Session|null} The loaded session or null if not found
+   */
   function loadSession(id) {
     const session = storage.getSession(id)
     if (session) {
@@ -70,6 +177,10 @@ export const useThinkingStore = defineStore('thinking', () => {
     return session
   }
 
+  /**
+   * Loads the current session from storage
+   * @returns {Session|null} The current session or null if not found
+   */
   function loadCurrentSession() {
     const session = storage.getCurrentSession()
     if (session) {
@@ -78,12 +189,21 @@ export const useThinkingStore = defineStore('thinking', () => {
     return session
   }
 
+  /**
+   * Creates a new analysis session
+   * @param {string} problemText - The problem to analyze
+   * @returns {Session} The newly created session
+   */
   function createSession(problemText) {
     const session = storage.createSession(problemText)
     currentSession.value = session
     return session
   }
 
+  /**
+   * Updates the current session with new data
+   * @param {Partial<Session>} updates - Fields to update
+   */
   function updateCurrentSession(updates) {
     if (!currentSession.value) return
     
@@ -91,6 +211,9 @@ export const useThinkingStore = defineStore('thinking', () => {
     currentSession.value = updatedSession
   }
 
+  /**
+   * Resets the store state and clears the current session
+   */
   function resetSession() {
     currentSession.value = null
     loading.value = false
@@ -98,7 +221,16 @@ export const useThinkingStore = defineStore('thinking', () => {
     aiStatus.value = 'idle'
   }
 
-  // Step 1: Interview
+  // ============================================
+  // Step 1: Interview Actions
+  // ============================================
+  
+  /**
+   * Generates interview questions for the problem
+   * Uses AI to create clarifying questions
+   * @async
+   * @returns {Promise<void>}
+   */
   async function generateQuestions() {
     if (!currentSession.value) return
     
@@ -112,7 +244,6 @@ export const useThinkingStore = defineStore('thinking', () => {
         currentLocale.value
       )
       
-      // 兼容处理：AI 可能返回 { questions: [...] } 或直接返回 [...]
       let questions = []
       if (result) {
         if (Array.isArray(result)) {
@@ -135,6 +266,12 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Saves an answer to an interview question
+   * @param {string} questionId - The question ID
+   * @param {string} question - The question text
+   * @param {string} answer - The user's answer
+   */
   function saveAnswer(questionId, question, answer) {
     if (!currentSession.value) return
 
@@ -153,6 +290,11 @@ export const useThinkingStore = defineStore('thinking', () => {
     })
   }
 
+  /**
+   * Generates the understanding report based on interview answers
+   * @async
+   * @returns {Promise<void>}
+   */
   async function generateUnderstandingReport() {
     if (!currentSession.value) return
 
@@ -169,7 +311,7 @@ export const useThinkingStore = defineStore('thinking', () => {
 
       updateCurrentSession({
         understandingReport: report,
-        currentStep: 2, // 自动进入下一步
+        currentStep: 2,
         updatedAt: new Date().toISOString()
       })
 
@@ -181,7 +323,16 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
-  // Step 2: Analysis
+  // ============================================
+  // Step 2: Analysis Actions
+  // ============================================
+  
+  /**
+   * Recommends thinking models based on the problem
+   * @async
+   * @returns {Promise<Object>} The recommendation result
+   * @throws {Error} If the AI call fails
+   */
   async function recommendModels() {
     if (!currentSession.value) return
 
@@ -212,6 +363,12 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Generates analysis dimensions for a selected thinking model
+   * @async
+   * @param {string} modelId - The thinking model ID to use
+   * @returns {Promise<void>}
+   */
   async function generateAnalysisDimensions(modelId) {
     if (!currentSession.value) return
 
@@ -227,26 +384,12 @@ export const useThinkingStore = defineStore('thinking', () => {
         currentLocale.value
       )
 
-      // 初始化分析卡片
       const cards = result.dimensions.map(dim => ({
         ...dim,
-        status: 'pending', // pending, analyzing, completed
+        status: 'pending',
         content: null
       }))
 
-      // 确保使用传入的 modelId，防止 AI 返回错误的 ID
-      // 现在的 THINKING_MODELS 已经没有 name 了，所以我们需要从 i18n 获取 name，或者只存 ID
-      // 之前代码: const model = ai.THINKING_MODELS[modelId]
-      // updateCurrentSession({ thinkingModel: model ? model.name : result.thinkingModel ... })
-      // 现在的 model 对象只有 id, icon 等。
-      // 我们存 ID 即可，显示时再翻译。如果需要存 name 以备后用（比如历史记录），可以用 t() 获取。
-      // 但为了历史记录的语言一致性，最好还是存 ID。
-      // 不过旧代码存了 thinkingModel (string name)。
-      // 如果我们改存 ID，需要 UI 适配。
-      // 让我们存 translated name 吧，简单点。或者最好存 ID。
-      // 为了兼容旧数据，我们保留 thinkingModel 字段，存 translated name。
-      // 同时也存 thinkingModelId。
-      
       const modelName = t(`thinking_models.${modelId}.name`)
 
       updateCurrentSession({
@@ -264,6 +407,12 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Analyzes a single dimension
+   * @async
+   * @param {string} cardId - The analysis card ID to analyze
+   * @returns {Promise<void>}
+   */
   async function analyzeDimension(cardId) {
     if (!currentSession.value) return
 
@@ -272,7 +421,6 @@ export const useThinkingStore = defineStore('thinking', () => {
     if (cardIndex === -1) return
 
     try {
-      // 更新卡片状态
       cards[cardIndex].status = 'analyzing'
       updateCurrentSession({ analysisCards: cards })
 
@@ -290,7 +438,6 @@ export const useThinkingStore = defineStore('thinking', () => {
         currentLocale.value
       )
 
-      // 更新卡片内容
       cards[cardIndex] = {
         ...cards[cardIndex],
         ...result,
@@ -305,7 +452,6 @@ export const useThinkingStore = defineStore('thinking', () => {
       setAiStatus('completed')
     } catch (err) {
       handleError(err)
-      // 恢复卡片状态
       cards[cardIndex].status = 'pending'
       updateCurrentSession({ analysisCards: cards })
     } finally {
@@ -313,6 +459,11 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Generates the comprehensive deep analysis report
+   * @async
+   * @returns {Promise<void>}
+   */
   async function generateDeepAnalysisReport() {
     if (!currentSession.value) return
 
@@ -342,6 +493,13 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Re-analyzes a card with user feedback
+   * @async
+   * @param {string} cardId - The card ID to re-analyze
+   * @param {string} feedback - User's feedback for improvement
+   * @returns {Promise<void>}
+   */
   async function reanalyzeCard(cardId, feedback) {
     if (!currentSession.value) return
 
@@ -378,13 +536,18 @@ export const useThinkingStore = defineStore('thinking', () => {
       setAiStatus('completed')
     } catch (err) {
       handleError(err)
-      cards[cardIndex].status = 'completed' // Restore status on error
+      cards[cardIndex].status = 'completed'
       updateCurrentSession({ analysisCards: cards })
     } finally {
       setLoading(false)
     }
   }
 
+  /**
+   * Updates an analysis card's content
+   * @param {string} cardId - The card ID to update
+   * @param {Object} content - New content to merge
+   */
   function updateAnalysisCard(cardId, content) {
     if (!currentSession.value) return
     
@@ -396,6 +559,10 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Deletes an analysis card
+   * @param {string} cardId - The card ID to delete
+   */
   function deleteAnalysisCard(cardId) {
     if (!currentSession.value) return
 
@@ -403,7 +570,15 @@ export const useThinkingStore = defineStore('thinking', () => {
     updateCurrentSession({ analysisCards: cards })
   }
 
-  // Step 3: Solutions
+  // ============================================
+  // Step 3: Solutions Actions
+  // ============================================
+  
+  /**
+   * Generates solutions based on the deep analysis
+   * @async
+   * @returns {Promise<void>}
+   */
   async function generateSolutions() {
     if (!currentSession.value) return
 
@@ -432,6 +607,13 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Updates a solution's content
+   * @async
+   * @param {string} id - The solution ID
+   * @param {Object} content - New content to merge
+   * @returns {Promise<void>}
+   */
   async function updateSolution(id, content) {
     if (!currentSession.value) return
     
@@ -443,6 +625,13 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Regenerates a solution with user feedback
+   * @async
+   * @param {string} id - The solution ID to regenerate
+   * @param {string} feedback - User's feedback for improvement
+   * @returns {Promise<void>}
+   */
   async function regenerateSolution(id, feedback) {
     if (!currentSession.value) return
 
@@ -463,7 +652,7 @@ export const useThinkingStore = defineStore('thinking', () => {
         currentLocale.value
       )
 
-      solutions[index] = { ...newSolution, id: oldSolution.id } // 保持 ID 不变
+      solutions[index] = { ...newSolution, id: oldSolution.id }
       
       updateCurrentSession({ 
         solutions,
@@ -478,10 +667,15 @@ export const useThinkingStore = defineStore('thinking', () => {
     }
   }
 
+  /**
+   * Generates a mind map visualization
+   * Uses caching to avoid redundant AI calls
+   * @async
+   * @returns {Promise<void>}
+   */
   async function generateMindMap() {
     if (!currentSession.value) return
 
-    // 检查缓存
     const currentHash = generateHash(JSON.stringify({
       problem: currentSession.value.problem,
       cards: currentSession.value.analysisCards,
@@ -489,7 +683,7 @@ export const useThinkingStore = defineStore('thinking', () => {
     }))
 
     if (currentSession.value.mindMap && currentSession.value.mindMapHash === currentHash) {
-      return // 使用缓存
+      return
     }
 
     try {
@@ -519,19 +713,14 @@ export const useThinkingStore = defineStore('thinking', () => {
   }
 
   return {
-    // State
     currentSession,
     loading,
     error,
     aiStatus,
     aiStatusMessage,
     aiResponseCount,
-    
-    // Getters
     currentStep,
     problem,
-    
-    // Actions
     loadSession,
     loadCurrentSession,
     createSession,

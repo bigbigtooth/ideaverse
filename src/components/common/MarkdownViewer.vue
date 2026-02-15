@@ -1,3 +1,14 @@
+<!--
+  @fileoverview Markdown viewer component
+  @module components/common/MarkdownViewer
+  @description Renders Markdown content as HTML using the marked library.
+  Supports GFM (GitHub Flavored Markdown) with custom styling
+  for consistent appearance across the application.
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { computed } from 'vue'
 import { marked } from 'marked'
@@ -6,7 +17,6 @@ const props = defineProps({
   content: { type: String, default: '' }
 })
 
-// 配置 marked
 marked.setOptions({
   breaks: true,
   gfm: true

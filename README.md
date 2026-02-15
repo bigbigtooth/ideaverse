@@ -1,61 +1,135 @@
-# 深度思界 (IdeaVerse)
+# IdeaVerse
 
-深度思界是一个帮助用户利用科学思维模型进行深度问题分析的工具。它结合了多种经典的思维模型（如 MECE、第一性原理、六顶思考帽等），通过 AI 辅助生成多维度的分析报告。
+**AI-Powered Deep Thinking Assistant**
 
-## 功能特性
+[中文](./README_CN.md) | English
 
-- **多语言支持**：全面支持中文和英文界面，AI 也会根据语言设置进行相应语言的思考和回复。
-- **多维分析**：针对问题自动推荐合适的思维模型，并生成多个维度的分析卡片。
-- **渐进式展示**：分析卡片逐个生成并显示，提供流畅的用户体验。
-- **Markdown 支持**：分析内容支持 Markdown 格式（粗体、斜体等），重点突出，阅读体验更佳。
-- **AI 辅助**：基于大语言模型，提供深度、专业的分析见解。
+---
 
-## 最近更新
+<p align="center">
+  Combining 36 scientific thinking models for multi-dimensional deep problem analysis with AI assistance
+</p>
 
-- **国际化 (i18n) 重构**：
-  - **全站多语言**：实现了完整的中英文切换功能，覆盖所有界面文本、提示信息和 AI 生成内容。
-  - **架构升级**：重构了 Service 层、Store 层和 View 层，引入 `vue-i18n` 进行统一的语言资源管理。
-  - **动态 Prompt**：AI 的系统提示词 (System Prompt) 现在会根据当前语言自动切换，确保 AI "用英语思考英语问题"。
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#demo">Demo</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#tech-stack">Tech Stack</a> •
+  <a href="#contributing">Contributing</a> •
+  <a href="#license">License</a>
+</p>
 
-- **UI/UX 升级**：
-  - **图标库重构**：全面移除 Emoji，采用 Lucide 图标库，提升界面的专业感和设计统一性。
-  - **动态图标支持**：实现了后端 AI 模型推荐图标与前端动态渲染的完整映射机制。
-  - **视觉优化**：移除了过时的灰度滤镜，优化了图标与文字的排版布局。
+---
 
-- **性能优化**：
-  - 实现了思维导图生成的缓存机制。当分析内容未发生变更时，重新生成将直接使用缓存，避免重复调用 AI，提升响应速度并节省 Token。
+## Features
 
-- **移动端适配优化**：
-  - 修复了移动端首页头部内容重叠的问题。
-  - 优化了移动端导航栏和 Logo 的显示效果。
-  - 调整了移动端 Hero 区域的布局和字体大小。
+- **🧠 36 Thinking Models**: Covering 6 domains - logical thinking, creative thinking, problem solving, marketing, team organization, and business strategy
+- **🌍 Multi-language Support**: Complete Chinese and English interface, AI responds in the corresponding language
+- **📊 Mind Map Visualization**: Interactive mind maps generated with Markmap
+- **🔄 Three-Step Analysis**: Problem Understanding → Deep Analysis → Solution Evaluation
+- **🔐 Local Data Storage**: Privacy-focused, data stays on your device
+- **⚙️ Customizable Prompts**: Users can customize all AI system prompts in settings
 
-- **Markdown 渲染支持**：
-  - 启用了分析卡片内容的 Markdown 格式支持。
-  - AI 生成的内容现在包含粗体等格式以强调关键信息。
-  - 优化了卡片展示组件，集成 MarkdownViewer 进行富文本渲染。
+## Demo
 
-- **交互体验优化**：
-  - 解决了全屏加载遮挡卡片逐个显示的问题，现在可以实时看到每个维度的分析进度。
-  - 优化了"查看完整报告"按钮的状态逻辑，确保所有分析完成后才可查看汇总报告。
+Visit [GitHub Pages](https://bigtooth.github.io/ideaverse) for a live demo.
 
-- **文档与代码规范**：
-  - 完善了核心代码的中文注释，特别是 AI 服务层和状态管理层。
-  - 新增 [SITEMAP.md](./SITEMAP.md) 文档，详细说明项目文件结构和各模块作用。
+## Quick Start
 
-## 项目结构
+### Prerequisites
 
-详细的文件结构和模块说明请参考 [SITEMAP.md](./SITEMAP.md)。
+- Node.js >= 18.0.0
+- npm >= 9.0.0
 
-## 技术栈
+### Installation
 
-- Vue 3
-- Vite
-- Pinia
-- Vue I18n (国际化)
-- Marked (Markdown 渲染)
+```bash
+# Clone the repository
+git clone https://github.com/BigTooth/ideaverse.git
+cd ideaverse
 
-## 版权声明
+# Install dependencies
+npm install
 
-本项目仅供个人学习和交流使用，**严禁用于任何商业用途**。
-未经作者授权，不得将本项目代码、设计或生成的分析内容用于商业盈利活动。
+# Start development server
+npm run dev
+```
+
+### Configuration
+
+1. Configure your AI API Key in the settings page
+2. Supports OpenAI API and DeepSeek API
+3. Customizable API endpoint URL
+
+### Build
+
+```bash
+# Build for production
+npm run build
+
+# Preview build result
+npm run preview
+```
+
+## Project Structure
+
+```
+ideaverse/
+├── src/
+│   ├── components/       # Vue components
+│   │   ├── common/       # Common components
+│   │   ├── step1/        # Step 1 components
+│   │   ├── step2/        # Step 2 components
+│   │   └── step3/        # Step 3 components
+│   ├── views/            # Page views
+│   ├── stores/           # Pinia state management
+│   ├── services/         # Business services
+│   │   ├── ai.js         # AI API integration
+│   │   ├── prompts.js    # AI prompt management
+│   │   └── storage.js    # Local storage service
+│   ├── locales/          # i18n language files
+│   ├── i18n/             # i18n configuration
+│   ├── router/           # Router configuration
+│   └── styles/           # Style files
+├── public/               # Static assets
+├── package.json
+├── vite.config.js
+└── LICENSE
+```
+
+For detailed project structure, see [SITEMAP.md](./SITEMAP.md).
+
+## Tech Stack
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Vue | 3.5.x | Frontend Framework |
+| Vite | 7.x | Build Tool |
+| Pinia | 3.x | State Management |
+| Vue Router | 4.x | Routing |
+| Vue I18n | 11.x | Internationalization |
+| OpenAI SDK | 6.x | AI API Integration |
+| Markmap | 0.18.x | Mind Map |
+| D3.js | 7.x | Data Visualization |
+| Lucide | latest | Icons |
+| Marked | 17.x | Markdown Parser |
+
+## Contributing
+
+We welcome all forms of contributions! Please read the [Contributing Guide](./CONTRIBUTING.md) for details.
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for version history.
+
+## License
+
+This project is open-sourced under the [GPL-3.0 License](./LICENSE).
+
+This means you can freely use, modify, and distribute this software, but derivative works must be released under the same license.
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/BigTooth">BigTooth</a>
+</p>

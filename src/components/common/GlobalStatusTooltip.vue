@@ -1,3 +1,14 @@
+<!--
+  @fileoverview Global status tooltip component
+  @module components/common/GlobalStatusTooltip
+  @description A floating tooltip that displays AI operation status
+  in real-time. Shows current operation message and response
+  character count during streaming.
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { computed } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'

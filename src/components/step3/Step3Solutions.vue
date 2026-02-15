@@ -1,3 +1,20 @@
+<!--
+  @fileoverview Step 3: Solutions component
+  @module components/step3/Step3Solutions
+  @description The final step in the thinking workflow. Generates and
+  evaluates solution options based on the deep analysis.
+  
+  Features:
+  - AI-generated solution options with scoring
+  - Solution editing and regeneration
+  - Interactive mind map visualization using Markmap
+  - Export to PNG, SVG, and Markdown formats
+  - Full-screen mind map viewing
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useThinkingStore } from '../../stores/thinking'

@@ -1,3 +1,14 @@
+<!--
+  @fileoverview Loading overlay component
+  @module components/common/LoadingOverlay
+  @description A full-screen loading overlay with animated brain icon,
+  rotating tips, and elapsed time display. Used during AI operations
+  to provide visual feedback to users.
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Brain, Timer, Lightbulb } from 'lucide-vue-next'
@@ -38,7 +49,6 @@ function updateTime() {
 watch(() => props.show, (newVal) => {
   if (newVal) {
     elapsedTime.value = 0
-    // Initialize first tip
     if (tips.value.length > 0) {
       currentTip.value = tips.value[0]
     }
@@ -52,7 +62,6 @@ watch(() => props.show, (newVal) => {
   }
 })
 
-// Watch for language changes to update current tip immediately
 watch(tips, (newTips) => {
   if (newTips.length > 0) {
     currentTip.value = newTips[tipIndex.value % newTips.length]
@@ -88,7 +97,6 @@ function formatTime(seconds) {
   <Transition name="fade">
     <div v-if="show" class="loading-overlay">
       <div class="loading-content">
-        <!-- 动画图标 -->
         <div class="brain-animation">
           <Brain class="brain-icon" :size="48" />
           <div class="pulse-ring"></div>
@@ -96,29 +104,20 @@ function formatTime(seconds) {
           <div class="pulse-ring delay-2"></div>
         </div>
         
-        <!-- 主消息 -->
         <div class="loading-message">{{ message || t('common.loading') }}{{ dots }}</div>
         
-        <!-- 已用时间 -->
         <div class="elapsed-time">
           <Timer class="time-icon" :size="16" />
           {{ formatTime(elapsedTime) }}
         </div>
         
-        <!-- 进度提示 -->
         <div class="progress-hint">
           <div class="hint-bar">
             <div class="hint-fill"></div>
           </div>
-          <!-- 这里的文案也可以放到 locales 中，暂时先硬编码或者加到 common -->
           <span>{{ t('tips[1]') }}</span> 
-          <!-- 上面这个 tips[1] 是 "AI 正在调用多个思维模型..."，不太对，原来的文案是 "AI 正在深度分析中，请耐心等待" -->
-          <!-- 我没有把这句话放到 locale 里，为了简单，直接翻译 -->
-          <!-- 或者我用 tips 里的某一句，或者加一个 key -->
-          <!-- 看来我需要加一个 key: status.analyzing_wait -->
         </div>
         
-        <!-- 轮播提示 -->
         <div class="tip-card">
           <Lightbulb class="tip-icon" :size="20" />
           <Transition name="tip-fade" mode="out-in">
@@ -151,7 +150,6 @@ function formatTime(seconds) {
   padding: var(--space-xl);
 }
 
-/* Brain Animation */
 .brain-animation {
   position: relative;
   width: 100px;
@@ -193,7 +191,6 @@ function formatTime(seconds) {
   50% { transform: translate(-50%, -55%) scale(1.05); }
 }
 
-/* Message */
 .loading-message {
   font-size: var(--text-xl);
   font-weight: 600;
@@ -201,7 +198,6 @@ function formatTime(seconds) {
   margin-bottom: var(--space-md);
 }
 
-/* Elapsed Time */
 .elapsed-time {
   display: inline-flex;
   align-items: center;
@@ -215,7 +211,6 @@ function formatTime(seconds) {
   margin-bottom: var(--space-xl);
 }
 
-/* Progress Hint */
 .progress-hint {
   margin-bottom: var(--space-xl);
 }
@@ -247,7 +242,6 @@ function formatTime(seconds) {
   color: var(--color-text-muted);
 }
 
-/* Tip Card */
 .tip-card {
   background: transparent;
   border-top: 1px solid var(--color-border);
@@ -270,7 +264,6 @@ function formatTime(seconds) {
   line-height: 1.5;
 }
 
-/* Transitions */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease;
 }

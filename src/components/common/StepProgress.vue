@@ -1,3 +1,14 @@
+<!--
+  @fileoverview Step progress indicator component
+  @module components/common/StepProgress
+  @description Displays a visual progress indicator for the three-step
+  thinking workflow. Shows completed, active, and pending states
+  with animated transitions.
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { Check } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'

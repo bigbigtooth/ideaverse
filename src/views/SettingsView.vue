@@ -1,3 +1,16 @@
+<!--
+  @fileoverview Settings view component
+  @module views/SettingsView
+  @description Application settings page for configuring:
+  - AI API configuration (base URL, API key, model)
+  - Language preference
+  - Custom AI prompts for each analysis step
+  - Data management (clear all data)
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -38,9 +51,8 @@ const showKey = ref(false)
 const saved = ref(false)
 const currentLanguage = ref(locale.value)
 
-// 提示词相关
 const prompts = ref({})
-const expandedPrompt = ref(null) // 当前展开编辑的 prompt ID
+const expandedPrompt = ref(null)
 const promptSaved = ref(false)
 
 onMounted(() => {
@@ -56,7 +68,6 @@ function loadPrompts() {
 function handleLanguageChange() {
   locale.value = currentLanguage.value
   localStorage.setItem('ideaverse_language', currentLanguage.value)
-  // Reload prompts for the new language
   loadPrompts()
 }
 
@@ -115,7 +126,6 @@ function goHome() {
 
 <template>
   <div class="settings-view">
-    <!-- 头部 -->
     <header class="header">
       <div class="container header-content">
         <button class="btn btn-ghost" @click="goHome">
@@ -128,11 +138,9 @@ function goHome() {
       </div>
     </header>
     
-    <!-- 主内容 -->
     <main class="main">
       <div class="container">
         <div class="settings-content">
-          <!-- API 配置 -->
           <section class="settings-section">
             <h2 class="section-title"><Key class="section-icon" :size="24" /> {{ t('settings.api_configuration') }}</h2>
             <p class="section-desc">
@@ -142,7 +150,6 @@ function goHome() {
               </a>
             </p>
             
-            <!-- Base URL -->
             <div class="input-group">
               <label class="input-label">{{ t('settings.base_url_label') }}</label>
               <input 
@@ -153,7 +160,6 @@ function goHome() {
               />
             </div>
             
-            <!-- API Key -->
             <div class="input-group">
               <label class="input-label">{{ t('settings.api_key_label') }}</label>
               <div class="input-with-toggle">
@@ -172,7 +178,6 @@ function goHome() {
               </div>
             </div>
             
-            <!-- Model -->
             <div class="input-group">
               <label class="input-label">{{ t('settings.model_label') }}</label>
               <input 
@@ -194,7 +199,6 @@ function goHome() {
             </div>
           </section>
 
-          <!-- 语言设置 -->
           <section class="settings-section">
              <h2 class="section-title"><Globe class="section-icon" :size="24" /> {{ t('settings.language_label') }}</h2>
              <div class="input-group">
@@ -205,7 +209,6 @@ function goHome() {
              </div>
           </section>
 
-          <!-- AI 提示词设置 -->
           <section class="settings-section">
             <div class="section-header">
               <h2 class="section-title"><Bot class="section-icon" :size="24" /> {{ t('settings.ai_prompts') }}</h2>
@@ -251,7 +254,6 @@ function goHome() {
             </div>
           </section>
           
-          <!-- 数据管理 -->
           <section class="settings-section">
             <h2 class="section-title">
               <Package class="section-icon" :size="24" /> {{ t('settings.data_management') }}
@@ -271,7 +273,6 @@ function goHome() {
             </div>
           </section>
           
-          <!-- 关于 -->
           <section class="settings-section">
             <h2 class="section-title">
               <Info class="section-icon" :size="24" /> {{ t('settings.about') }}
@@ -288,5 +289,3 @@ function goHome() {
     </main>
   </div>
 </template>
-
-<!-- Styles are imported from ../styles/SettingsView.css -->

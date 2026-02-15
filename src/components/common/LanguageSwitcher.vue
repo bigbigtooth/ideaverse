@@ -1,3 +1,14 @@
+<!--
+  @fileoverview Language switcher component
+  @module components/common/LanguageSwitcher
+  @description A toggle button for switching between supported languages.
+  Currently supports Chinese (zh-CN) and English (en-US).
+  Persists language preference to localStorage.
+  
+  @copyright 2026 BigTooth
+  @license GPL-3.0
+-->
+
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
